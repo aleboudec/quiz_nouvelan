@@ -73,6 +73,12 @@
       background: #303064;
     }
 
+    .bouton:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
     .icone {
       width: 58px;
       height: 58px;
@@ -133,6 +139,14 @@
         </span>
       </button>
 
+      <button class="bouton" id="creation-equipes">
+        <span class="icone">👥</span>
+        <span class="texte-bouton">
+          <strong>Création équipes</strong>
+          <small>Mélanger les joueurs en équipes de 4 maximum</small>
+        </span>
+      </button>
+
       <button class="bouton" id="lancer">
         <span class="icone">▶️</span>
         <span class="texte-bouton">
@@ -156,49 +170,116 @@
     <audio id="sonIntro" src="intro.mp3"></audio>
   </main>
 
- <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      set
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
-    authDomain: "nouvelan-a256f.firebaseapp.com",
-    databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "nouvelan-a256f",
-    storageBucket: "nouvelan-a256f.firebasestorage.app",
-    messagingSenderId: "312028300581",
-    appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  const statut = document.getElementById("statut");
-  const sonIntro = document.getElementById("sonIntro");
+    const statut = document.getElementById("statut");
+    const sonIntro = document.getElementById("sonIntro");
+    const boutonEquipes = document.getElementById("creation-equipes");
 
-  document.getElementById("intro").addEventListener("click", async () => {
-    try {
-      sonIntro.currentTime = 0;
-      await sonIntro.play();
-      statut.textContent = "Intro sonore lancée 🔊";
-    } catch {
-      statut.textContent = "Ajoute le fichier intro.mp3 dans le dossier du site.";
-    }
-  });
+    document.getElementById("intro").addEventListener("click", async () => {
+      try {
+        sonIntro.currentTime = 0;
+        await sonIntro.play();
+        statut.textContent = "Intro sonore lancée 🔊";
+      } catch (error) {
+        console.error(error);
+        statut.textContent = "Ajoute le fichier intro.mp3 dans le dossier du site.";
+      }
+    });
 
-  document.getElementById("lancer").addEventListener("click", async () => {
-    try {
-      await set(ref(db, "partie/etat"), "jeu_lance");
-      statut.textContent = "Le jeu est lancé ! Les joueurs vont être redirigés 🎉";
-    } catch (error) {
-      console.error(error);
-      statut.textContent = "Impossible de lancer le jeu. Vérifie la connexion à Firebase.";
-    }
-  });
+    boutonEquipes.addEventListener("click", async () => {
+      boutonEquipes.disabled = true;
+      statut.textContent = "Création des équipes en cours…";
 
-  document.getElementById("classement").addEventListener("click", () => {
-    statut.textContent = "Le classement sera affiché ici quand les scores seront disponibles.";
-  });
-</script>
+      try {
+        // Récupère les joueurs enregistrés dans Firebase
+        const snapshot = await get(ref(db, "joueurs"));
+        const donneesJoueurs = snapshot.val() || {};
+
+        const joueurs = Object.entries(donneesJoueurs)
+          .filter(([, joueur]) => joueur && joueur.pseudo)
+          .map(([id, joueur]) => ({
+            id,
+            pseudo: joueur.pseudo
+          }));
+
+        if (joueurs.length === 0) {
+          statut.textContent = "Aucun joueur n’est connecté pour le moment.";
+          return;
+        }
+
+        // Mélange les joueurs au hasard
+        for (let i = joueurs.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [joueurs[i], joueurs[j]] = [joueurs[j], joueurs[i]];
+        }
+
+        // Crée assez d’équipes pour ne pas dépasser 4 joueurs par équipe
+        const nombreEquipes = Math.ceil(joueurs.length / 4);
+        const equipes = {};
+
+        for (let i = 1; i <= nombreEquipes; i++) {
+          equipes[`equipe${i}`] = {
+            nom: `Équipe ${i}`,
+            joueurs: {}
+          };
+        }
+
+        // Répartit les joueurs à tour de rôle pour équilibrer les équipes
+        joueurs.forEach((joueur, index) => {
+          const numeroEquipe = (index % nombreEquipes) + 1;
+
+          equipes[`equipe${numeroEquipe}`].joueurs[joueur.id] = {
+            pseudo: joueur.pseudo
+          };
+        });
+
+        // Enregistre les équipes dans Firebase
+        await set(ref(db, "partie/equipes"), equipes);
+
+        statut.textContent =
+          `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""} réparti${joueurs.length > 1 ? "s" : ""} dans ${nombreEquipes} équipe${nombreEquipes > 1 ? "s" : ""} 🎉`;
+      } catch (error) {
+        console.error("Erreur lors de la création des équipes :", error);
+        statut.textContent = "Impossible de créer les équipes. Vérifie la connexion et les règles Firebase.";
+      } finally {
+        boutonEquipes.disabled = false;
+      }
+    });
+
+    document.getElementById("lancer").addEventListener("click", async () => {
+      try {
+        await set(ref(db, "partie/etat"), "jeu_lance");
+        statut.textContent = "Le jeu est lancé ! Les joueurs vont être redirigés 🎉";
+      } catch (error) {
+        console.error(error);
+        statut.textContent = "Impossible de lancer le jeu. Vérifie la connexion à Firebase.";
+      }
+    });
+
+    document.getElementById("classement").addEventListener("click", () => {
+      statut.textContent = "Le classement sera affiché ici quand les scores seront disponibles.";
+    });
+  </script>
 </body>
 </html>
