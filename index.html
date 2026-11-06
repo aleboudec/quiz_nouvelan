@@ -41,16 +41,16 @@
     .contenu {
       position: relative;
       z-index: 1;
-      width: min(1200px, 100%);
+      width: min(1250px, 100%);
       margin: auto;
       display: grid;
-      grid-template-columns: 1fr 0.8fr;
+      grid-template-columns: 0.9fr 1.1fr;
       align-items: center;
-      gap: 50px;
+      gap: 40px;
     }
 
     h1 {
-      margin: 0 0 36px;
+      margin: 0 0 30px;
       font-size: clamp(3rem, 6vw, 6rem);
       line-height: 0.98;
       letter-spacing: -2px;
@@ -78,52 +78,104 @@
       transform: translateY(-4px);
     }
 
+    .panneaux {
+      display: grid;
+      gap: 20px;
+    }
+
     .carte {
-      padding: 28px;
+      padding: 24px;
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 24px;
-      background: rgba(20, 21, 57, 0.82);
+      background: rgba(20, 21, 57, 0.86);
       backdrop-filter: blur(8px);
       box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
     }
 
     .carte h2 {
       margin: 0 0 8px;
-      font-size: 2rem;
+      font-size: 1.8rem;
     }
 
-    #compteur {
-      margin: 0 0 18px;
+    .compteur {
+      margin: 0 0 16px;
       color: #ffcf4a;
     }
 
-    /* Les pseudos sont répartis en colonnes, sans défilement dans la liste */
     #liste-joueurs {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
-      max-height: none;
-      overflow: visible;
       padding: 0;
       margin: 0;
       list-style: none;
     }
 
-    #liste-joueurs li {
+    #liste-joueurs li,
+    .joueur-equipe {
       min-width: 0;
       padding: 8px 10px;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.12);
       overflow-wrap: anywhere;
       text-align: center;
-      font-size: 0.95rem;
     }
 
     .vide {
       color: #d0d0e5;
     }
 
-    @media (max-width: 750px) {
+    /* Les équipes sont cachées jusqu'à leur création */
+    #section-equipes {
+      display: none;
+    }
+
+    #section-equipes.visible {
+      display: block;
+      animation: apparition 0.6s ease both;
+    }
+
+    #liste-equipes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .carte-equipe {
+      padding: 16px;
+      border: 1px solid rgba(255, 207, 74, 0.45);
+      border-radius: 18px;
+      background: rgba(255, 207, 74, 0.1);
+      animation: apparition 0.55s ease both;
+    }
+
+    .carte-equipe h3 {
+      margin: 0 0 12px;
+      color: #ffcf4a;
+      font-size: 1.3rem;
+    }
+
+    .joueurs-equipe {
+      display: grid;
+      gap: 7px;
+    }
+
+    .joueur-equipe {
+      text-align: left;
+    }
+
+    @keyframes apparition {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 800px) {
       body {
         padding: 28px;
         background-position: 65% center;
@@ -133,33 +185,42 @@
         background: linear-gradient(
           0deg,
           rgba(12, 13, 40, 0.97) 0%,
-          rgba(12, 13, 40, 0.78) 65%,
-          rgba(12, 13, 40, 0.35) 100%
+          rgba(12, 13, 40, 0.86) 60%,
+          rgba(12, 13, 40, 0.5) 100%
         );
       }
 
       .contenu {
         grid-template-columns: 1fr;
         gap: 30px;
-        padding: 30px 0;
+        padding: 25px 0;
       }
 
       h1 {
         font-size: clamp(2.8rem, 12vw, 4.5rem);
       }
+    }
 
+    @media (max-width: 500px) {
       .carte {
-        padding: 22px;
+        padding: 18px;
       }
 
       #liste-joueurs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+
+      #liste-equipes {
+        grid-template-columns: 1fr;
+      }
     }
 
-    @media (max-width: 420px) {
-      #liste-joueurs {
-        grid-template-columns: 1fr;
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
       }
     }
   </style>
@@ -173,24 +234,29 @@
         <span>des questions&nbsp;!</span>
       </h1>
 
-      
+      <a class="bouton" href="jeu.html">Jouer&nbsp;! 🎉</a>
     </section>
 
-    <section class="carte" aria-live="polite">
-      <h2>🎮 Joueurs connectés</h2>
-      <p id="compteur">Chargement…</p>
+    <div class="panneaux">
+      <section class="carte" aria-live="polite">
+        <h2>🎮 Joueurs connectés</h2>
+        <p class="compteur" id="compteur-joueurs">Chargement…</p>
 
-      <ul id="liste-joueurs">
-        <li class="vide">En attente des joueurs…</li>
-      </ul>
-    </section>
+        <ul id="liste-joueurs">
+          <li class="vide">En attente des joueurs…</li>
+        </ul>
+      </section>
+
+      <section class="carte" id="section-equipes" aria-live="polite">
+        <h2>🏆 Les équipes sont prêtes !</h2>
+        <p class="compteur" id="compteur-equipes"></p>
+        <div id="liste-equipes"></div>
+      </section>
+    </div>
   </main>
 
   <script type="module">
-    import {
-      initializeApp
-    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
     import {
       getDatabase,
       ref,
@@ -210,42 +276,95 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const liste = document.getElementById("liste-joueurs");
-    const compteur = document.getElementById("compteur");
+    const listeJoueurs = document.getElementById("liste-joueurs");
+    const compteurJoueurs = document.getElementById("compteur-joueurs");
+    const sectionEquipes = document.getElementById("section-equipes");
+    const listeEquipes = document.getElementById("liste-equipes");
+    const compteurEquipes = document.getElementById("compteur-equipes");
 
-    onValue(
-      ref(db, "joueurs"),
-      (snapshot) => {
-        const joueurs = snapshot.val() || {};
+    // Affiche et met à jour les joueurs connectés
+    onValue(ref(db, "joueurs"), (snapshot) => {
+      const joueurs = snapshot.val() || {};
 
-        const pseudos = Object.values(joueurs)
-          .map((joueur) => joueur.pseudo)
-          .filter(Boolean);
+      const pseudos = Object.values(joueurs)
+        .map((joueur) => joueur?.pseudo)
+        .filter(Boolean);
 
-        compteur.textContent =
-          `${pseudos.length} joueur${pseudos.length > 1 ? "s" : ""}`;
+      compteurJoueurs.textContent =
+        `${pseudos.length} joueur${pseudos.length > 1 ? "s" : ""}`;
 
-        liste.replaceChildren();
+      listeJoueurs.replaceChildren();
 
-        if (pseudos.length === 0) {
-          const ligne = document.createElement("li");
-          ligne.className = "vide";
-          ligne.textContent = "En attente des joueurs…";
-          liste.appendChild(ligne);
-          return;
-        }
-
-        pseudos.forEach((pseudo) => {
-          const ligne = document.createElement("li");
-          ligne.textContent = `🎉 ${pseudo}`;
-          liste.appendChild(ligne);
-        });
-      },
-      (error) => {
-        compteur.textContent = "Impossible de charger les joueurs.";
-        console.error("Erreur Firebase :", error);
+      if (pseudos.length === 0) {
+        const ligne = document.createElement("li");
+        ligne.className = "vide";
+        ligne.textContent = "En attente des joueurs…";
+        listeJoueurs.appendChild(ligne);
+        return;
       }
-    );
+
+      pseudos.forEach((pseudo) => {
+        const ligne = document.createElement("li");
+        ligne.textContent = `🎉 ${pseudo}`;
+        listeJoueurs.appendChild(ligne);
+      });
+    }, (error) => {
+      compteurJoueurs.textContent = "Impossible de charger les joueurs.";
+      console.error("Erreur lors du chargement des joueurs :", error);
+    });
+
+    // Affiche les équipes dès que la régie les crée dans Firebase
+    onValue(ref(db, "partie/equipes"), (snapshot) => {
+      const equipes = snapshot.val();
+
+      listeEquipes.replaceChildren();
+
+      if (!equipes) {
+        sectionEquipes.classList.remove("visible");
+        return;
+      }
+
+      const equipesTriees = Object.entries(equipes)
+        .sort(([cleA], [cleB]) => {
+          const numeroA = Number(cleA.match(/\d+/)?.[0] || 0);
+          const numeroB = Number(cleB.match(/\d+/)?.[0] || 0);
+          return numeroA - numeroB;
+        });
+
+      let totalJoueurs = 0;
+
+      equipesTriees.forEach(([cleEquipe, equipe], index) => {
+        const joueurs = Object.values(equipe.joueurs || {});
+        totalJoueurs += joueurs.length;
+
+        const carte = document.createElement("article");
+        carte.className = "carte-equipe";
+        carte.style.animationDelay = `${index * 120}ms`;
+
+        const titre = document.createElement("h3");
+        titre.textContent = equipe.nom || cleEquipe;
+
+        const liste = document.createElement("div");
+        liste.className = "joueurs-equipe";
+
+        joueurs.forEach((joueur) => {
+          const nom = document.createElement("div");
+          nom.className = "joueur-equipe";
+          nom.textContent = `🎉 ${joueur.pseudo || "Joueur"}`;
+          liste.appendChild(nom);
+        });
+
+        carte.append(titre, liste);
+        listeEquipes.appendChild(carte);
+      });
+
+      compteurEquipes.textContent =
+        `${equipesTriees.length} équipe${equipesTriees.length > 1 ? "s" : ""} · ${totalJoueurs} joueur${totalJoueurs > 1 ? "s" : ""}`;
+
+      sectionEquipes.classList.add("visible");
+    }, (error) => {
+      console.error("Erreur lors du chargement des équipes :", error);
+    });
   </script>
 </body>
 </html>
