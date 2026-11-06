@@ -37,12 +37,13 @@
       max-height: 900px;
       display: flex;
       flex-direction: column;
+      min-height: 0;
     }
 
     .vue {
       display: none;
+      flex: 1 1 auto;
       min-height: 0;
-      height: 100%;
       flex-direction: column;
     }
 
@@ -52,7 +53,7 @@
 
     .entete {
       flex: 0 0 auto;
-      margin: 0 0 22px;
+      margin: 0 0 18px;
       text-align: center;
     }
 
@@ -69,20 +70,27 @@
       font-size: clamp(2rem, 5vw, 3.5rem);
     }
 
+    .titre-section {
+      grid-column: 1 / -1;
+      margin: 0 0 2px;
+      color: #ffcf4a;
+      font-size: 1.2rem;
+    }
+
     .commandes {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
     }
 
     .bouton {
-      min-height: 88px;
-      padding: 16px 20px;
+      min-height: 82px;
+      padding: 12px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 10px;
       border: 2px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
+      border-radius: 18px;
       background: #25254d;
       color: white;
       font: inherit;
@@ -103,29 +111,59 @@
     }
 
     .icone {
-      width: 50px;
-      height: 50px;
-      flex: 0 0 50px;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
       display: grid;
       place-items: center;
-      border-radius: 15px;
+      border-radius: 13px;
       background: #ffcf4a;
       color: #171735;
-      font-size: 1.6rem;
+      font-size: 1.25rem;
+    }
+
+    .texte-bouton {
+      min-width: 0;
     }
 
     .texte-bouton strong {
       display: block;
-      font-size: 1.3rem;
+      font-size: 1rem;
     }
 
     .texte-bouton small {
       display: block;
       margin-top: 4px;
       color: #c9c9df;
-      font-size: 0.95rem;
+      font-size: 0.78rem;
     }
 
+    .jeux {
+      margin-top: auto;
+      padding-top: 18px;
+    }
+
+    .jeux .titre-section {
+      margin-bottom: 10px;
+    }
+
+    .boutons-jeux {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .bouton-jeu {
+      min-height: 78px;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .bouton-jeu .texte-bouton strong {
+      font-size: 1.1rem;
+    }
+
+    /* Vue de gestion des joueurs */
     .barre-gestion {
       flex: 0 0 auto;
       display: flex;
@@ -138,6 +176,7 @@
     .barre-gestion h2 {
       margin: 0;
       font-size: 1.5rem;
+      text-align: center;
     }
 
     #compteur-joueurs {
@@ -242,9 +281,15 @@
     .statut {
       flex: 0 0 auto;
       min-height: 24px;
-      margin: 12px 0 0;
+      margin: 10px 0 0;
       color: #c9c9df;
       text-align: center;
+    }
+
+    @media (max-width: 850px) {
+      .commandes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 600px) {
@@ -253,37 +298,66 @@
       }
 
       .entete {
-        margin-bottom: 14px;
+        margin-bottom: 12px;
       }
 
       .commandes {
-        grid-template-columns: 1fr;
-        gap: 9px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
       }
 
-      .bouton {
+      .commandes .bouton {
         min-height: 68px;
-        padding: 10px 13px;
-        gap: 12px;
+        padding: 9px;
+        gap: 8px;
       }
 
-      .icone {
-        width: 42px;
-        height: 42px;
-        flex-basis: 42px;
-        font-size: 1.35rem;
+      .commandes .icone {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+        font-size: 1.05rem;
       }
 
-      .texte-bouton strong {
-        font-size: 1.1rem;
+      .commandes .texte-bouton strong {
+        font-size: 0.9rem;
       }
 
-      .texte-bouton small {
-        font-size: 0.82rem;
+      .commandes .texte-bouton small {
+        font-size: 0.7rem;
+      }
+
+      .jeux {
+        padding-top: 12px;
+      }
+
+      .boutons-jeux {
+        gap: 6px;
+      }
+
+      .bouton-jeu {
+        min-height: 56px;
+        padding: 6px;
+      }
+
+      .bouton-jeu .icone {
+        display: none;
+      }
+
+      .bouton-jeu .texte-bouton strong {
+        font-size: 0.9rem;
       }
 
       #liste-joueurs {
         grid-template-columns: 1fr;
+      }
+
+      .barre-gestion {
+        gap: 6px;
+      }
+
+      .barre-gestion h2 {
+        font-size: 1.1rem;
       }
 
       .ligne-joueur {
@@ -298,6 +372,10 @@
         padding: 6px;
         font-size: 0.7rem;
       }
+
+      .statut {
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
@@ -311,7 +389,10 @@
         <h1>Quiz d’Alan 🎤</h1>
       </header>
 
-      <section class="commandes">
+      <!-- Commandes de gestion en haut -->
+      <section class="commandes" aria-label="Commandes de gestion">
+        <h2 class="titre-section">Gestion</h2>
+
         <button class="bouton" id="intro" type="button">
           <span class="icone">🔊</span>
           <span class="texte-bouton">
@@ -324,7 +405,7 @@
           <span class="icone">🧑‍🤝‍🧑</span>
           <span class="texte-bouton">
             <strong>Gestion des joueurs</strong>
-            <small>Bloquer, débloquer ou supprimer des joueurs</small>
+            <small>Bloquer, débloquer ou supprimer</small>
           </span>
         </button>
 
@@ -332,7 +413,7 @@
           <span class="icone">👥</span>
           <span class="texte-bouton">
             <strong>Création des équipes</strong>
-            <small>Mélanger les joueurs en équipes de 4 maximum</small>
+            <small>Équipes de 4 joueurs maximum</small>
           </span>
         </button>
 
@@ -340,14 +421,7 @@
           <span class="icone">🗑️</span>
           <span class="texte-bouton">
             <strong>Supprimer les équipes</strong>
-            <small>Supprimer toutes les équipes créées</small>
-          </span>
-        </button>
-
-        <button class="bouton" id="lancer" type="button">
-          <span class="icone">▶️</span>
-          <span class="texte-bouton">
-            <strong>Premier jeu</strong>
+            <small>Supprimer toutes les équipes</small>
           </span>
         </button>
 
@@ -355,13 +429,45 @@
           <span class="icone">🏆</span>
           <span class="texte-bouton">
             <strong>Afficher le classement</strong>
-            <small>Montrer les scores des équipes</small>
+            <small>Montrer les scores</small>
           </span>
         </button>
       </section>
+
+      <!-- Les cinq jeux en bas -->
+      <section class="jeux" aria-label="Lancer un jeu">
+        <h2 class="titre-section">Lancer un jeu</h2>
+
+        <div class="boutons-jeux">
+          <button class="bouton bouton-jeu" id="jeu-1" type="button">
+            <span class="icone">1</span>
+            <span class="texte-bouton"><strong>Jeu 1</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-2" type="button">
+            <span class="icone">2</span>
+            <span class="texte-bouton"><strong>Jeu 2</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-3" type="button">
+            <span class="icone">3</span>
+            <span class="texte-bouton"><strong>Jeu 3</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-4" type="button">
+            <span class="icone">4</span>
+            <span class="texte-bouton"><strong>Jeu 4</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-5" type="button">
+            <span class="icone">5</span>
+            <span class="texte-bouton"><strong>Jeu 5</strong></span>
+          </button>
+        </div>
+      </section>
     </section>
 
-    <!-- Gestion : remplace l’accueil, ne s’ajoute pas en dessous -->
+    <!-- Gestion des joueurs : remplace l’accueil -->
     <section id="vue-joueurs" class="vue" aria-live="polite">
       <div class="barre-gestion">
         <button class="bouton-retour" id="retour" type="button">
@@ -379,7 +485,7 @@
 
     <p class="statut" id="statut">En attente de tes commandes…</p>
 
-    <!-- Mets intro.mp3 dans le même dossier que admin.html -->
+    <!-- Place intro.mp3 dans le même dossier que ce fichier HTML -->
     <audio id="sonIntro" src="intro.mp3"></audio>
   </main>
 
@@ -428,117 +534,119 @@
     });
 
     // Affichage en temps réel des joueurs
-    onValue(ref(db, "joueurs"), (snapshot) => {
-      const donnees = snapshot.val() || {};
-      const joueurs = Object.entries(donnees)
-        .filter(([, joueur]) => joueur && joueur.pseudo);
+    onValue(
+      ref(db, "joueurs"),
+      (snapshot) => {
+        const donnees = snapshot.val() || {};
+        const joueurs = Object.entries(donnees)
+          .filter(([, joueur]) => joueur && joueur.pseudo);
 
-      compteurJoueurs.textContent =
-        `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""}`;
+        compteurJoueurs.textContent =
+          `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""}`;
 
-      listeJoueurs.replaceChildren();
+        listeJoueurs.replaceChildren();
 
-      if (joueurs.length === 0) {
-        const message = document.createElement("li");
-        message.className = "message-liste";
-        message.textContent = "Aucun joueur inscrit pour le moment.";
-        listeJoueurs.appendChild(message);
-        return;
-      }
+        if (joueurs.length === 0) {
+          const message = document.createElement("li");
+          message.className = "message-liste";
+          message.textContent = "Aucun joueur inscrit pour le moment.";
+          listeJoueurs.appendChild(message);
+          return;
+        }
 
-      joueurs.forEach(([id, joueur]) => {
-        const ligne = document.createElement("li");
-        ligne.className = "ligne-joueur";
+        joueurs.forEach(([id, joueur]) => {
+          const ligne = document.createElement("li");
+          ligne.className = "ligne-joueur";
 
-        const infos = document.createElement("div");
-        infos.className = "infos-joueur";
+          const infos = document.createElement("div");
+          infos.className = "infos-joueur";
 
-        const pseudo = document.createElement("span");
-        pseudo.className = "pseudo-joueur";
-        pseudo.textContent = `🎉 ${joueur.pseudo}`;
+          const pseudo = document.createElement("span");
+          pseudo.className = "pseudo-joueur";
+          pseudo.textContent = `🎉 ${joueur.pseudo}`;
 
-        const etat = document.createElement("span");
-        etat.className = "etat-joueur";
-        etat.textContent = joueur.bloque ? "Bloqué" : "Débloqué";
+          const etat = document.createElement("span");
+          etat.className = "etat-joueur";
+          etat.textContent = joueur.bloque ? "Bloqué" : "Débloqué";
 
-        infos.append(pseudo, etat);
+          infos.append(pseudo, etat);
 
-        const actions = document.createElement("div");
-        actions.className = "actions-joueur";
+          const actions = document.createElement("div");
+          actions.className = "actions-joueur";
 
-        const boutonBloquer = document.createElement("button");
-        boutonBloquer.type = "button";
-        boutonBloquer.className = "bloquer-joueur";
-        boutonBloquer.textContent = "Bloquer";
-        boutonBloquer.disabled = joueur.bloque === true;
+          const boutonBloquer = document.createElement("button");
+          boutonBloquer.type = "button";
+          boutonBloquer.className = "bloquer-joueur";
+          boutonBloquer.textContent = "Bloquer";
+          boutonBloquer.disabled = joueur.bloque === true;
+          boutonBloquer.addEventListener("click", () => {
+            modifierBlocage(id, true, joueur.pseudo);
+          });
 
-        boutonBloquer.addEventListener("click", () => {
-          modifierBlocage(id, true, joueur.pseudo);
-        });
+          const boutonDebloquer = document.createElement("button");
+          boutonDebloquer.type = "button";
+          boutonDebloquer.className = "debloquer-joueur";
+          boutonDebloquer.textContent = "Débloquer";
+          boutonDebloquer.disabled = joueur.bloque !== true;
+          boutonDebloquer.addEventListener("click", () => {
+            modifierBlocage(id, false, joueur.pseudo);
+          });
 
-        const boutonDebloquer = document.createElement("button");
-        boutonDebloquer.type = "button";
-        boutonDebloquer.className = "debloquer-joueur";
-        boutonDebloquer.textContent = "Débloquer";
-        boutonDebloquer.disabled = joueur.bloque !== true;
+          const boutonSupprimer = document.createElement("button");
+          boutonSupprimer.type = "button";
+          boutonSupprimer.className = "supprimer-joueur";
+          boutonSupprimer.textContent = "Supprimer";
 
-        boutonDebloquer.addEventListener("click", () => {
-          modifierBlocage(id, false, joueur.pseudo);
-        });
-
-        const boutonSupprimer = document.createElement("button");
-        boutonSupprimer.type = "button";
-        boutonSupprimer.className = "supprimer-joueur";
-        boutonSupprimer.textContent = "Supprimer";
-
-        boutonSupprimer.addEventListener("click", async () => {
-          if (!confirm(`Supprimer le joueur « ${joueur.pseudo} » ?`)) {
-            return;
-          }
-
-          boutonSupprimer.disabled = true;
-          statut.textContent = `Suppression de ${joueur.pseudo}…`;
-
-          try {
-            const changements = {
-              [`joueurs/${id}`]: null
-            };
-
-            const equipesSnapshot = await get(ref(db, "partie/equipes"));
-            const equipes = equipesSnapshot.val() || {};
-
-            for (const [cleEquipe, equipe] of Object.entries(equipes)) {
-              if (equipe?.joueurs?.[id]) {
-                changements[
-                  `partie/equipes/${cleEquipe}/joueurs/${id}`
-                ] = null;
-              }
+          boutonSupprimer.addEventListener("click", async () => {
+            if (!confirm(`Supprimer le joueur « ${joueur.pseudo} » ?`)) {
+              return;
             }
 
-            await update(ref(db), changements);
-            statut.textContent =
-              `Le joueur « ${joueur.pseudo} » a été supprimé.`;
-          } catch (error) {
-            console.error("Erreur lors de la suppression :", error);
-            statut.textContent =
-              "Impossible de supprimer ce joueur. Vérifie les règles Firebase.";
-            boutonSupprimer.disabled = false;
-          }
+            boutonSupprimer.disabled = true;
+            statut.textContent = `Suppression de ${joueur.pseudo}…`;
+
+            try {
+              const changements = {
+                [`joueurs/${id}`]: null
+              };
+
+              const equipesSnapshot = await get(ref(db, "partie/equipes"));
+              const equipes = equipesSnapshot.val() || {};
+
+              for (const [cleEquipe, equipe] of Object.entries(equipes)) {
+                if (equipe?.joueurs?.[id]) {
+                  changements[
+                    `partie/equipes/${cleEquipe}/joueurs/${id}`
+                  ] = null;
+                }
+              }
+
+              await update(ref(db), changements);
+              statut.textContent =
+                `Le joueur « ${joueur.pseudo} » a été supprimé.`;
+            } catch (error) {
+              console.error("Erreur lors de la suppression :", error);
+              statut.textContent =
+                "Impossible de supprimer ce joueur. Vérifie les règles Firebase.";
+              boutonSupprimer.disabled = false;
+            }
+          });
+
+          actions.append(boutonBloquer, boutonDebloquer, boutonSupprimer);
+          ligne.append(infos, actions);
+          listeJoueurs.appendChild(ligne);
         });
+      },
+      (error) => {
+        console.error("Erreur lors du chargement des joueurs :", error);
+        listeJoueurs.replaceChildren();
 
-        actions.append(boutonBloquer, boutonDebloquer, boutonSupprimer);
-        ligne.append(infos, actions);
-        listeJoueurs.appendChild(ligne);
-      });
-    }, (error) => {
-      console.error("Erreur lors du chargement des joueurs :", error);
-      listeJoueurs.replaceChildren();
-
-      const message = document.createElement("li");
-      message.className = "message-liste";
-      message.textContent = "Impossible de charger les joueurs.";
-      listeJoueurs.appendChild(message);
-    });
+        const message = document.createElement("li");
+        message.className = "message-liste";
+        message.textContent = "Impossible de charger les joueurs.";
+        listeJoueurs.appendChild(message);
+      }
+    );
 
     async function modifierBlocage(id, bloque, pseudo) {
       try {
@@ -562,12 +670,13 @@
         await sonIntro.play();
         statut.textContent = "Intro sonore lancée 🔊";
       } catch (error) {
-        console.error(error);
+        console.error("Erreur lors de la lecture de l’intro :", error);
         statut.textContent =
           "Impossible de lire l’intro. Vérifie que intro.mp3 est dans le dossier du site.";
       }
     });
 
+    // Création des équipes : les joueurs bloqués sont ignorés
     document
       .getElementById("creation-equipes")
       .addEventListener("click", async (event) => {
@@ -592,12 +701,13 @@
             return;
           }
 
-          // Mélange aléatoire
+          // Mélange aléatoire des joueurs
           for (let i = joueurs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [joueurs[i], joueurs[j]] = [joueurs[j], joueurs[i]];
           }
 
+          // Crée assez d’équipes pour ne pas dépasser 4 joueurs par équipe
           const nombreEquipes = Math.ceil(joueurs.length / 4);
           const equipes = {};
 
@@ -629,10 +739,16 @@
         }
       });
 
+    // Supprime toutes les équipes
     document
       .getElementById("supprimer-equipes")
-      .addEventListener("click", async () => {
-        if (!confirm("Supprimer toutes les équipes ?")) return;
+      .addEventListener("click", async (event) => {
+        if (!confirm("Supprimer toutes les équipes ?")) {
+          return;
+        }
+
+        const bouton = event.currentTarget;
+        bouton.disabled = true;
 
         try {
           await set(ref(db, "partie/equipes"), null);
@@ -641,20 +757,32 @@
           console.error("Erreur lors de la suppression des équipes :", error);
           statut.textContent =
             "Impossible de supprimer les équipes. Vérifie les règles Firebase.";
+        } finally {
+          bouton.disabled = false;
         }
       });
 
-    document.getElementById("lancer").addEventListener("click", async () => {
-      try {
-        await set(ref(db, "partie/etat"), "jeu_lance");
-        statut.textContent =
-          "Le jeu est lancé ! Les joueurs vont être redirigés 🎉";
-      } catch (error) {
-        console.error("Erreur lors du lancement :", error);
-        statut.textContent =
-          "Impossible de lancer le jeu. Vérifie la connexion à Firebase.";
-      }
-    });
+    // Les boutons envoient jeu_1_lance, jeu_2_lance, etc. dans Firebase
+    for (let numero = 1; numero <= 5; numero++) {
+      document
+        .getElementById(`jeu-${numero}`)
+        .addEventListener("click", async (event) => {
+          const bouton = event.currentTarget;
+          bouton.disabled = true;
+          statut.textContent = `Lancement du jeu ${numero}…`;
+
+          try {
+            await set(ref(db, "partie/etat"), `jeu_${numero}_lance`);
+            statut.textContent = `Le jeu ${numero} est lancé !`;
+          } catch (error) {
+            console.error(`Erreur lors du lancement du jeu ${numero} :`, error);
+            statut.textContent =
+              `Impossible de lancer le jeu ${numero}. Vérifie la connexion à Firebase.`;
+          } finally {
+            bouton.disabled = false;
+          }
+        });
+    }
 
     document.getElementById("classement").addEventListener("click", () => {
       statut.textContent =
