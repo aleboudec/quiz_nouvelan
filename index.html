@@ -19,42 +19,53 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      padding: 30px;
-      overflow-x: hidden;
-      background: #171735;
+      padding: 24px;
+      overflow: hidden;
       color: white;
       font-family: "Fredoka", Arial, sans-serif;
+
+      /* Remplace animateur.png par le nom exact de ta photo */
+      background: #171735 url("animateur.png") center / cover no-repeat;
     }
 
-    .accueil {
-      width: min(1100px, 100%);
-      min-height: 580px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
+    /* Voile sombre pour que le titre reste lisible */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(12, 13, 40, 0.88),
+        rgba(12, 13, 40, 0.58),
+        rgba(12, 13, 40, 0.2)
+      );
     }
 
-    .texte {
+    main {
       position: relative;
       z-index: 1;
-      flex: 1;
-      padding: 30px 0;
+      width: min(90%, 900px);
+      padding: 48px 30px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 28px;
+      background: rgba(12, 15, 50, 0.48);
+      box-shadow: 0 15px 60px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(5px);
     }
 
-    .texte p {
+    .surtitre {
       margin: 0 0 14px;
       color: #ffcf4a;
-      font-size: 1.15rem;
+      font-size: 1rem;
       font-weight: 600;
       letter-spacing: 3px;
       text-transform: uppercase;
     }
 
     h1 {
-      max-width: 650px;
       margin: 0 0 36px;
-      font-size: clamp(3.4rem, 8vw, 6.5rem);
+      font-size: clamp(3rem, 8vw, 6rem);
       font-weight: 700;
       line-height: 0.98;
       letter-spacing: -2px;
@@ -83,60 +94,33 @@
       box-shadow: 0 11px 0 #c87924;
     }
 
-    .personnage {
-      align-self: stretch;
-      flex: 0 1 45%;
-      display: flex;
-      align-items: end;
-      justify-content: center;
-      min-width: 0;
-    }
-
-    .personnage img {
-      display: block;
-      width: 100%;
-      max-height: 620px;
-      object-fit: contain;
-      object-position: bottom;
-      filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.35));
-    }
-
-    @media (max-width: 700px) {
-      .accueil {
-        min-height: auto;
-        flex-direction: column;
-        text-align: center;
-        gap: 0;
+    @media (max-width: 600px) {
+      body {
+        background-position: 58% center;
       }
 
-      .texte {
-        padding: 45px 0 10px;
+      main {
+        width: 100%;
+        padding: 38px 20px;
       }
 
-      h1 {
-        margin-inline: auto;
-      }
-
-      .personnage {
-        width: min(420px, 100%);
-        flex: none;
-        max-height: 42vh;
+      .surtitre {
+        font-size: 0.8rem;
       }
     }
   </style>
 </head>
 
 <body>
-  <main class="accueil">
-    <section class="texte">
-      <p>Le grand quiz d’Alan</p>
-      <h1>Alan t’en pose,<br><span>des questions&nbsp;!</span></h1>
-      <a class="bouton" href="jeu.html">Jouer&nbsp;! 🎉</a>
-    </section>
+  <main>
+    <p class="surtitre">Le grand quiz d’Alan</p>
 
-    <div class="personnage">
-      <img src="animateur-detoure.png" alt="L’animateur du quiz">
-    </div>
+    <h1>
+      Alan t’en pose,<br>
+      <span>des questions&nbsp;!</span>
+    </h1>
+
+    <a class="bouton" href="jeu.html">Jouer&nbsp;! 🎉</a>
   </main>
 </body>
 </html>
