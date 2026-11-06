@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entre ton pseudo — Quiz d’Alan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      background: #171735;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+    }
+
+    main {
+      width: min(520px, 100%);
+      padding: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 28px;
+      background: #25254d;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 8vw, 3rem);
+    }
+
+    p {
+      margin: 0 0 28px;
+      color: #d0d0e5;
+      font-size: 1.1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      outline: none;
+      background: white;
+      color: #171735;
+      font: inherit;
+      font-size: 1.1rem;
+    }
+
+    input:focus {
+      border-color: #ffcf4a;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 16px;
+      border: 0;
+      border-radius: 50px;
+      background: #ffcf4a;
+      color: #171735;
+      font: inherit;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #c87924;
+    }
+
+    button:hover {
+      background: #ffda6e;
+    }
+
+    .retour {
+      display: inline-block;
+      margin-top: 26px;
+      color: #d0d0e5;
+      text-decoration: none;
+    }
+
+    .retour:hover {
+      color: #ffcf4a;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Bienvenue au quiz ! 🎉</h1>
+    <p>Entre ton pseudo pour rejoindre la partie.</p>
+
+    <form id="formulaire">
+      <label for="pseudo">Ton pseudo</label>
+      <input
+        id="pseudo"
+        name="pseudo"
+        type="text"
+        placeholder="Ex. Alan"
+        maxlength="20"
+        autocomplete="nickname"
+        required
+      >
+      <button type="submit">Continuer&nbsp;! 🚀</button>
+    </form>
+
+    <a class="retour" href="index.html">← Retour à l’accueil</a>
+  </main>
+
+  <script>
+    document.getElementById("formulaire").addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const pseudo = document.getElementById("pseudo").value.trim();
+
+      if (!pseudo) return;
+
+      localStorage.setItem("pseudoJoueur", pseudo);
+      alert(`Bienvenue ${pseudo} !`);
+    });
+  </script>
+</body>
+</html>
