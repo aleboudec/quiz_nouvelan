@@ -197,10 +197,13 @@
       }
     }
 
-    /* Affichage plein écran quand les équipes sont créées */
+    /* Mode plein écran : les quatre équipes restent visibles */
     body.equipes-creees {
       display: block;
-      min-height: 100vh;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
       padding: 0;
       overflow: hidden;
     }
@@ -212,7 +215,8 @@
     body.equipes-creees .contenu {
       display: block;
       width: 100%;
-      min-height: 100vh;
+      height: 100%;
+      min-height: 0;
       margin: 0;
     }
 
@@ -223,6 +227,8 @@
 
     body.equipes-creees .panneaux {
       display: block;
+      width: 100%;
+      height: 100%;
     }
 
     body.equipes-creees #section-equipes.visible {
@@ -230,7 +236,12 @@
       inset: 0;
       z-index: 2;
       display: block;
-      padding: 20px;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+      padding: 16px;
+      overflow: hidden;
       border: 0;
       border-radius: 0;
       background: transparent;
@@ -250,20 +261,50 @@
     }
 
     body.equipes-creees #section-equipes > h2 {
-      top: 12px;
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      top: 10px;
+      margin: 0;
+      font-size: clamp(1.3rem, 4vh, 2.5rem);
     }
 
     body.equipes-creees #compteur-equipes {
-      top: 68px;
+      top: 55px;
+      margin: 0;
+      font-size: clamp(0.8rem, 2vh, 1rem);
     }
 
     body.equipes-creees #liste-equipes {
       position: absolute;
-      inset: 115px 20px 20px;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 18px;
+      inset: 90px 16px 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    body.equipes-creees .carte-equipe {
+      min-height: 0;
+      padding: clamp(6px, 1.5vh, 16px);
+      overflow: hidden;
+    }
+
+    body.equipes-creees .carte-equipe h3 {
+      margin-bottom: clamp(4px, 0.8vh, 12px);
+      font-size: clamp(0.85rem, 2.5vh, 1.3rem);
+    }
+
+    body.equipes-creees .totem {
+      margin-bottom: 2px;
+      font-size: clamp(1.4rem, 5vh, 2.7rem);
+    }
+
+    body.equipes-creees .joueurs-equipe {
+      gap: clamp(3px, 0.6vh, 7px);
+    }
+
+    body.equipes-creees .joueur-equipe {
+      padding: clamp(3px, 0.7vh, 8px);
+      font-size: clamp(0.65rem, 1.8vh, 1rem);
     }
 
     @media (max-width: 800px) {
@@ -302,30 +343,39 @@
       }
 
       body.equipes-creees #section-equipes.visible {
-        padding: 10px;
+        padding: 8px;
+      }
+
+      body.equipes-creees #section-equipes > h2 {
+        top: 8px;
+        font-size: clamp(1.1rem, 4vw, 1.5rem);
+      }
+
+      body.equipes-creees #compteur-equipes {
+        top: 42px;
       }
 
       body.equipes-creees #liste-equipes {
-        inset: 110px 10px 10px;
-        gap: 10px;
+        inset: 72px 8px 8px;
+        gap: 8px;
       }
 
-      .carte-equipe {
-        padding: 10px;
-        border-radius: 15px;
-      }
-
-      .carte-equipe h3 {
-        font-size: clamp(1rem, 4vw, 1.3rem);
-      }
-
-      .totem {
-        font-size: clamp(2rem, 8vw, 3rem);
-      }
-
-      .joueur-equipe {
+      body.equipes-creees .carte-equipe {
         padding: 6px;
-        font-size: 0.9rem;
+        border-radius: 12px;
+      }
+
+      body.equipes-creees .carte-equipe h3 {
+        font-size: clamp(0.75rem, 3.5vw, 1.1rem);
+      }
+
+      body.equipes-creees .totem {
+        font-size: clamp(1.2rem, 7vw, 2rem);
+      }
+
+      body.equipes-creees .joueur-equipe {
+        padding: 4px;
+        font-size: clamp(0.6rem, 3vw, 0.85rem);
       }
     }
 
