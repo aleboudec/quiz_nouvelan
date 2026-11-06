@@ -10,31 +10,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
+      --couleur-equipe: #171735;
       min-height: 100vh;
       margin: 0;
       padding: 24px;
       display: grid;
       place-items: center;
-      background: #171735;
+      background: var(--couleur-equipe);
       color: white;
       font-family: "Fredoka", Arial, sans-serif;
+      transition: background 0.8s ease;
     }
 
     main {
       width: min(520px, 100%);
       padding: 42px;
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
       border-radius: 28px;
-      background: #25254d;
+      background: rgba(37, 37, 77, 0.94);
       box-shadow: 0 18px 50px rgba(0,0,0,0.3);
       text-align: center;
+      transition: border-color 0.5s ease, box-shadow 0.5s ease;
     }
 
-    h1 { margin: 0 0 12px; font-size: clamp(2rem, 8vw, 3rem); }
-    p { margin: 0 0 28px; color: #d0d0e5; font-size: 1.1rem; }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 8vw, 3rem);
+    }
+
+    p {
+      margin: 0 0 28px;
+      color: #d0d0e5;
+      font-size: 1.1rem;
+    }
 
     label {
       display: block;
@@ -55,7 +68,9 @@
       font-size: 1.1rem;
     }
 
-    input:focus { border-color: #ffcf4a; }
+    input:focus {
+      border-color: #ffcf4a;
+    }
 
     button {
       width: 100%;
@@ -72,9 +87,15 @@
       box-shadow: 0 6px 0 #c87924;
     }
 
-    button:disabled { opacity: 0.65; cursor: wait; }
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
 
-    #message { min-height: 1.5em; margin: 18px 0 0; }
+    #message {
+      min-height: 1.5em;
+      margin: 18px 0 0;
+    }
 
     .retour {
       display: inline-block;
@@ -83,7 +104,9 @@
       text-decoration: none;
     }
 
-    .retour:hover { color: #ffcf4a; }
+    .retour:hover {
+      color: #ffcf4a;
+    }
   </style>
 </head>
 
@@ -113,15 +136,15 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
     import {
-  getDatabase,
-  ref,
-  push,
-  set,
-  onValue
-} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+      getDatabase,
+      ref,
+      push,
+      set,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
       authDomain: "nouvelan-a256f.firebaseapp.com",
       databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "nouvelan-a256f",
@@ -137,6 +160,18 @@
     const champPseudo = document.getElementById("pseudo");
     const bouton = document.getElementById("bouton");
     const message = document.getElementById("message");
+    const carte = document.querySelector("main");
+
+    const equipesConfig = [
+      { nom: "Équipe des Lions", animal: "🦁", couleur: "#ff5555" },
+      { nom: "Équipe des Loups", animal: "🐺", couleur: "#55aaff" },
+      { nom: "Équipe des Ours", animal: "🐻", couleur: "#55d98b" },
+      { nom: "Équipe des Renards", animal: "🦊", couleur: "#ff9d42" }
+    ];
+
+    let joueurId = null;
+    let arretEcouteEquipe = null;
+    let arretEcouteLancement = null;
 
     formulaire.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -149,26 +184,84 @@
 
       try {
         const nouveauJoueur = push(ref(db, "joueurs"));
+        joueurId = nouveauJoueur.key;
+
         await set(nouveauJoueur, {
           pseudo,
           rejointLe: Date.now()
         });
 
-       message.textContent = "Tu as rejoint la partie ! En attente du lancement…";
-formulaire.querySelector("button").disabled = true;
+        localStorage.setItem("joueurId", joueurId);
+        localStorage.setItem("pseudoJoueur", pseudo);
 
-// Le téléphone attend le signal envoyé depuis la tablette
-onValue(ref(db, "partie/etat"), (snapshot) => {
-  if (snapshot.val() === "jeu_lance") {
-    window.location.href = "question.html";
-  }
-});
+        message.textContent = "Tu as rejoint la partie ! En attente des équipes…";
+
+        ecouterEquipe();
+        ecouterLancement();
       } catch (error) {
         console.error(error);
         message.textContent = "Erreur de connexion. Réessaie dans un instant.";
         bouton.disabled = false;
       }
     });
+
+    function ecouterEquipe() {
+      if (arretEcouteEquipe) arretEcouteEquipe();
+
+      arretEcouteEquipe = onValue(ref(db, "partie/equipes"), (snapshot) => {
+        const equipes = snapshot.val();
+        if (!equipes || !joueurId) return;
+
+        const equipesTriees = Object.entries(equipes)
+          .sort(([cleA], [cleB]) => {
+            const numeroA = Number(cleA.match(/\d+/)?.[0] || 0);
+            const numeroB = Number(cleB.match(/\d+/)?.[0] || 0);
+            return numeroA - numeroB;
+          })
+          .slice(0, 4);
+
+        for (let index = 0; index < equipesTriees.length; index++) {
+          const [cleEquipe, equipe] = equipesTriees[index];
+          const joueursEquipe = equipe?.joueurs || {};
+
+          // L'identifiant Firebase du joueur sert à retrouver sa propre équipe.
+          const joueur = joueursEquipe[joueurId];
+
+          if (!joueur) continue;
+
+          const config = equipesConfig[index];
+          const nomEquipe = config.nom;
+          const couleur = config.couleur;
+
+          document.body.style.setProperty("--couleur-equipe", couleur);
+          document.body.style.backgroundColor = couleur;
+          carte.style.borderColor = couleur;
+          carte.style.boxShadow = `0 18px 50px ${couleur}88`;
+
+          message.textContent =
+            `Tu es dans ${nomEquipe} ${config.animal} ! En attente du lancement…`;
+
+          localStorage.setItem("equipeJoueur", cleEquipe);
+          localStorage.setItem("couleurEquipe", couleur);
+          localStorage.setItem("nomEquipe", nomEquipe);
+
+          return;
+        }
+      }, (error) => {
+        console.error("Erreur de chargement des équipes :", error);
+        message.textContent = "Impossible de récupérer ton équipe.";
+      });
+    }
+
+    function ecouterLancement() {
+      if (arretEcouteLancement) arretEcouteLancement();
+
+      arretEcouteLancement = onValue(ref(db, "partie/etat"), (snapshot) => {
+        if (snapshot.val() === "jeu_lance") {
+          window.location.href = "question.html";
+        }
+      });
+    }
   </script>
 </body>
 </html>
