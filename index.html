@@ -14,47 +14,38 @@
       box-sizing: border-box;
     }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      padding: 6vw;
-      display: flex;
-      align-items: center;
-      color: white;
-      font-family: "Fredoka", Arial, sans-serif;
-      background: #171735 url("animateur.png") center / cover no-repeat;
+    html {
+      min-height: 100%;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(
-        90deg,
-        rgba(12, 13, 40, 0.94) 0%,
-        rgba(12, 13, 40, 0.82) 48%,
-        rgba(12, 13, 40, 0.28) 100%
-      );
-      pointer-events: none;
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px;
+      background:
+        radial-gradient(ellipse at top right, #34346e 0, transparent 45%),
+        #171735;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .contenu {
-      position: relative;
-      z-index: 1;
-      width: min(1250px, 100%);
-      margin: auto;
+      width: min(1200px, 100%);
+      min-height: calc(100vh - 64px);
+      margin: 0 auto;
       display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
       align-items: center;
       gap: 40px;
+      padding: 24px 0;
     }
 
     h1 {
-      margin: 0 0 30px;
-      font-size: clamp(3rem, 6vw, 6rem);
-      line-height: 0.98;
-      letter-spacing: -2px;
-      text-shadow: 4px 5px 0 #09091d;
+      margin: 0 0 28px;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 1.05;
     }
 
     h1 span {
@@ -63,42 +54,44 @@
 
     .bouton {
       display: inline-block;
-      padding: 17px 40px;
-      border-radius: 50px;
+      padding: 17px 30px;
+      border-radius: 18px;
       background: #ffcf4a;
       color: #171735;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 700;
       text-decoration: none;
-      box-shadow: 0 7px 0 #c87924;
-      transition: transform 0.2s;
+      box-shadow: 0 8px 0 #d99d18;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .bouton:hover {
-      transform: translateY(-4px);
+      transform: translateY(3px);
+      box-shadow: 0 5px 0 #d99d18;
     }
 
     .panneaux {
       display: grid;
-      gap: 20px;
+      gap: 18px;
+      min-width: 0;
     }
 
     .carte {
-      padding: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 24px;
-      background: rgba(20, 21, 57, 0.86);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 22px;
+      background: rgba(20, 21, 57, 0.9);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
     }
 
     .carte h2 {
       margin: 0 0 8px;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
     }
 
     .compteur {
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       color: #ffcf4a;
     }
 
@@ -115,9 +108,12 @@
     .joueur-equipe {
       min-width: 0;
       padding: 8px 10px;
-      border-radius: 12px;
+      border-radius: 11px;
       background: rgba(255, 255, 255, 0.12);
       overflow-wrap: anywhere;
+    }
+
+    #liste-joueurs li {
       text-align: center;
     }
 
@@ -125,207 +121,82 @@
       color: #d0d0e5;
     }
 
+    /* Les équipes restent cachées tant qu'elles ne sont pas créées */
     #section-equipes {
       display: none;
     }
 
     #section-equipes.visible {
       display: block;
-      animation: apparition 0.6s ease both;
+      animation: apparition 0.5s ease both;
     }
 
     #liste-equipes {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      gap: 10px;
     }
 
     .carte-equipe {
-      --couleur-equipe: #ffcf4a;
       min-width: 0;
-      padding: 16px;
-      border: 2px solid var(--couleur-equipe);
-      border-radius: 18px;
-      background: color-mix(
-        in srgb,
-        var(--couleur-equipe) 15%,
-        rgba(20, 21, 57, 0.92)
-      );
-      box-shadow: 0 0 24px color-mix(in srgb, var(--couleur-equipe) 35%, transparent);
-      animation: apparition 0.55s ease both;
+      padding: 12px;
+      border: 1px solid rgba(255, 207, 74, 0.4);
+      border-radius: 16px;
+      background: rgba(255, 207, 74, 0.09);
+      animation: apparition 0.5s ease both;
     }
 
     .carte-equipe h3 {
-      margin: 0 0 12px;
-      color: var(--couleur-equipe);
-      font-size: 1.3rem;
-      text-align: center;
-    }
-
-    .totem {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 2.7rem;
+      margin: 0 0 8px;
+      color: #ffcf4a;
+      font-size: 1.15rem;
     }
 
     .joueurs-equipe {
       display: grid;
-      gap: 7px;
-    }
-
-    .joueur-equipe {
-      text-align: left;
-    }
-
-    #feux-artifice {
-      position: fixed;
-      inset: 0;
-      z-index: 5;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
+      gap: 6px;
     }
 
     @keyframes apparition {
       from {
         opacity: 0;
-        transform: translateY(18px) scale(0.97);
+        transform: translateY(12px);
       }
       to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
       }
-    }
-
-    /* Affichage plein écran quand les équipes sont créées */
-    body.equipes-creees {
-      display: block;
-      min-height: 100vh;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    body.equipes-creees::before {
-      background: rgba(12, 13, 40, 0.82);
-    }
-
-    body.equipes-creees .contenu {
-      display: block;
-      width: 100%;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    body.equipes-creees .intro,
-    body.equipes-creees .carte-joueurs {
-      display: none;
-    }
-
-    body.equipes-creees .panneaux {
-      display: block;
-    }
-
-    body.equipes-creees #section-equipes.visible {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      display: block;
-      padding: 20px;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-      backdrop-filter: none;
-    }
-
-    body.equipes-creees #section-equipes > h2,
-    body.equipes-creees #compteur-equipes {
-      position: absolute;
-      left: 50%;
-      width: max-content;
-      max-width: 90vw;
-      transform: translateX(-50%);
-      text-align: center;
-      text-shadow: 0 3px 10px #09091d;
-    }
-
-    body.equipes-creees #section-equipes > h2 {
-      top: 12px;
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
-    }
-
-    body.equipes-creees #compteur-equipes {
-      top: 68px;
-    }
-
-    body.equipes-creees #liste-equipes {
-      position: absolute;
-      inset: 115px 20px 20px;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 18px;
     }
 
     @media (max-width: 800px) {
       body {
-        padding: 28px;
-        background-position: 65% center;
-      }
-
-      body::before {
-        background: linear-gradient(
-          0deg,
-          rgba(12, 13, 40, 0.97) 0%,
-          rgba(12, 13, 40, 0.86) 60%,
-          rgba(12, 13, 40, 0.5) 100%
-        );
+        padding: 22px;
       }
 
       .contenu {
+        min-height: auto;
         grid-template-columns: 1fr;
-        gap: 30px;
-        padding: 25px 0;
+        align-items: start;
+        gap: 28px;
+        padding: 24px 0;
       }
 
       h1 {
-        font-size: clamp(2.8rem, 12vw, 4.5rem);
+        font-size: clamp(2.8rem, 11vw, 4.5rem);
       }
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 480px) {
       .carte {
-        padding: 18px;
+        padding: 16px;
       }
 
       #liste-joueurs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      body.equipes-creees #section-equipes.visible {
-        padding: 10px;
-      }
-
-      body.equipes-creees #liste-equipes {
-        inset: 110px 10px 10px;
-        gap: 10px;
-      }
-
-      .carte-equipe {
-        padding: 10px;
-        border-radius: 15px;
-      }
-
-      .carte-equipe h3 {
-        font-size: clamp(1rem, 4vw, 1.3rem);
-      }
-
-      .totem {
-        font-size: clamp(2rem, 8vw, 3rem);
-      }
-
-      .joueur-equipe {
-        padding: 6px;
-        font-size: 0.9rem;
+      #liste-equipes {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -342,17 +213,17 @@
 
 <body>
   <main class="contenu">
-    <section class="intro">
+    <section>
       <h1>
         Alan t’en pose,<br>
         <span>des questions&nbsp;!</span>
       </h1>
 
-      <a class="bouton" href="jeu.html">Jouer&nbsp;! 🎉</a>
+      
     </section>
 
     <div class="panneaux">
-      <section class="carte carte-joueurs" aria-live="polite">
+      <section class="carte" aria-live="polite">
         <h2>🎮 Joueurs connectés</h2>
         <p class="compteur" id="compteur-joueurs">Chargement…</p>
 
@@ -362,14 +233,12 @@
       </section>
 
       <section class="carte" id="section-equipes" aria-live="polite">
-        <h2>🎆 Les équipes sont prêtes !</h2>
+        <h2>🏆 Les équipes sont prêtes !</h2>
         <p class="compteur" id="compteur-equipes"></p>
         <div id="liste-equipes"></div>
       </section>
     </div>
   </main>
-
-  <canvas id="feux-artifice" aria-hidden="true"></canvas>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
@@ -380,7 +249,7 @@
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
+      apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
       authDomain: "nouvelan-a256f.firebaseapp.com",
       databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "nouvelan-a256f",
@@ -398,25 +267,19 @@
     const listeEquipes = document.getElementById("liste-equipes");
     const compteurEquipes = document.getElementById("compteur-equipes");
 
-    const equipesConfig = [
-      { nom: "Équipe des Lions", animal: "🦁", couleur: "#ff5555" },
-      { nom: "Équipe des Loups", animal: "🐺", couleur: "#55aaff" },
-      { nom: "Équipe des Ours", animal: "🐻", couleur: "#55d98b" },
-      { nom: "Équipe des Renards", animal: "🦊", couleur: "#ff9d42" }
-    ];
-
+    // Afficher les joueurs connectés
     onValue(ref(db, "joueurs"), (snapshot) => {
-      const joueurs = snapshot.val() || {};
-      const entrees = Object.values(joueurs)
+      const donnees = snapshot.val() || {};
+      const joueurs = Object.values(donnees)
         .map(joueur => joueur?.pseudo)
         .filter(Boolean);
 
       compteurJoueurs.textContent =
-        `${entrees.length} joueur${entrees.length === 1 ? "" : "s"}`;
+        `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""}`;
 
       listeJoueurs.replaceChildren();
 
-      if (entrees.length === 0) {
+      if (joueurs.length === 0) {
         const ligne = document.createElement("li");
         ligne.className = "vide";
         ligne.textContent = "En attente des joueurs…";
@@ -424,158 +287,68 @@
         return;
       }
 
-      entrees.forEach((pseudo) => {
+      joueurs.forEach((pseudo) => {
         const ligne = document.createElement("li");
         ligne.textContent = `🎉 ${pseudo}`;
         listeJoueurs.appendChild(ligne);
       });
     }, (error) => {
       compteurJoueurs.textContent = "Impossible de charger les joueurs.";
-      console.error("Erreur de chargement des joueurs :", error);
+      console.error("Erreur lors du chargement des joueurs :", error);
     });
 
-    let signatureEquipesPrecedente = "";
-
+    // Afficher les équipes créées depuis la régie
     onValue(ref(db, "partie/equipes"), (snapshot) => {
       const equipes = snapshot.val();
+
       listeEquipes.replaceChildren();
 
       if (!equipes) {
-        document.body.classList.remove("equipes-creees");
         sectionEquipes.classList.remove("visible");
-        signatureEquipesPrecedente = "";
         return;
       }
 
-      const equipesTriees = Object.entries(equipes)
-        .sort(([cleA], [cleB]) => {
-          const numeroA = Number(cleA.match(/\d+/)?.[0] || 0);
-          const numeroB = Number(cleB.match(/\d+/)?.[0] || 0);
-          return numeroA - numeroB;
-        })
-        .slice(0, 4);
+      const equipesTriees = Object.entries(equipes).sort(([cleA], [cleB]) => {
+        const numeroA = Number(cleA.match(/\d+/)?.[0] || 0);
+        const numeroB = Number(cleB.match(/\d+/)?.[0] || 0);
+        return numeroA - numeroB;
+      });
 
       let totalJoueurs = 0;
 
-      equipesConfig.forEach((config, index) => {
-        const [cleEquipe, equipe] = equipesTriees[index] || [
-          `equipe${index + 1}`,
-          { joueurs: {} }
-        ];
-
-        const joueursEquipe = Object.values(equipe?.joueurs || {})
-          .filter(joueur => joueur && joueur.pseudo);
-
-        totalJoueurs += joueursEquipe.length;
+      equipesTriees.forEach(([cleEquipe, equipe], index) => {
+        const joueurs = Object.values(equipe.joueurs || {});
+        totalJoueurs += joueurs.length;
 
         const carte = document.createElement("article");
         carte.className = "carte-equipe";
-        carte.style.setProperty("--couleur-equipe", config.couleur);
-        carte.style.animationDelay = `${index * 120}ms`;
+        carte.style.animationDelay = `${index * 100}ms`;
 
         const titre = document.createElement("h3");
-        const totem = document.createElement("span");
-        totem.className = "totem";
-        totem.textContent = config.animal;
-        titre.append(totem, document.createTextNode(config.nom));
+        titre.textContent = equipe.nom || cleEquipe;
 
         const liste = document.createElement("div");
         liste.className = "joueurs-equipe";
 
-        if (joueursEquipe.length === 0) {
-          const vide = document.createElement("div");
-          vide.className = "joueur-equipe";
-          vide.textContent = "En attente d’un joueur…";
-          liste.appendChild(vide);
-        } else {
-          joueursEquipe.forEach((joueur) => {
-            const nom = document.createElement("div");
-            nom.className = "joueur-equipe";
-            nom.textContent = `🎉 ${joueur.pseudo}`;
-            liste.appendChild(nom);
-          });
-        }
+        joueurs.forEach((joueur) => {
+          const nom = document.createElement("div");
+          nom.className = "joueur-equipe";
+          nom.textContent = `🎉 ${joueur.pseudo || "Joueur"}`;
+          liste.appendChild(nom);
+        });
 
         carte.append(titre, liste);
         listeEquipes.appendChild(carte);
       });
 
       compteurEquipes.textContent =
-        `${totalJoueurs} joueur${totalJoueurs === 1 ? "" : "s"} réparti${totalJoueurs === 1 ? "" : "s"} dans 4 équipes`;
+        `${equipesTriees.length} équipe${equipesTriees.length > 1 ? "s" : ""} · ` +
+        `${totalJoueurs} joueur${totalJoueurs > 1 ? "s" : ""}`;
 
       sectionEquipes.classList.add("visible");
-      document.body.classList.add("equipes-creees");
-
-      const nouvelleSignature = JSON.stringify(equipes);
-      if (nouvelleSignature !== signatureEquipesPrecedente) {
-        signatureEquipesPrecedente = nouvelleSignature;
-        lancerFeuxArtifice();
-      }
     }, (error) => {
-      console.error("Erreur de chargement des équipes :", error);
+      console.error("Erreur lors du chargement des équipes :", error);
     });
-
-    function lancerFeuxArtifice() {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const canvas = document.getElementById("feux-artifice");
-      const ctx = canvas.getContext("2d");
-
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particules = [];
-      const couleurs = ["#ff5555", "#55aaff", "#55d98b", "#ffcf4a", "#ffffff"];
-
-      for (let explosion = 0; explosion < 8; explosion++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height * 0.7;
-        const couleur = couleurs[explosion % couleurs.length];
-
-        for (let i = 0; i < 35; i++) {
-          const angle = (Math.PI * 2 * i) / 35;
-          const vitesse = 1.5 + Math.random() * 4;
-
-          particules.push({
-            x,
-            y,
-            vx: Math.cos(angle) * vitesse,
-            vy: Math.sin(angle) * vitesse,
-            vie: 45 + Math.random() * 25,
-            couleur
-          });
-        }
-      }
-
-      function animer() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        for (const p of particules) {
-          if (p.vie <= 0) continue;
-
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.035;
-          p.vie--;
-
-          ctx.globalAlpha = Math.min(1, p.vie / 25);
-          ctx.fillStyle = p.couleur;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        ctx.globalAlpha = 1;
-
-        if (particules.some(p => p.vie > 0)) {
-          requestAnimationFrame(animer);
-        } else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-
-      animer();
-    }
   </script>
 </body>
 </html>
