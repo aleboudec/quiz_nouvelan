@@ -17,41 +17,33 @@
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
+      display: flex;
+      align-items: center;
+      padding: 6vw;
       overflow: hidden;
       color: white;
       font-family: "Fredoka", Arial, sans-serif;
-
-      /* Remplace animateur.png par le nom exact de ta photo */
       background: #171735 url("animateur.png") center / cover no-repeat;
     }
 
-    /* Voile sombre pour que le titre reste lisible */
+    /* Assombrit surtout la gauche, pour laisser ta tête visible à droite */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       background: linear-gradient(
         90deg,
-        rgba(12, 13, 40, 0.88),
-        rgba(12, 13, 40, 0.58),
-        rgba(12, 13, 40, 0.2)
+        rgba(12, 13, 40, 0.9) 0%,
+        rgba(12, 13, 40, 0.72) 42%,
+        rgba(12, 13, 40, 0.08) 75%
       );
     }
 
     main {
       position: relative;
       z-index: 1;
-      width: min(90%, 900px);
-      padding: 48px 30px;
-      text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 28px;
-      background: rgba(12, 15, 50, 0.48);
-      box-shadow: 0 15px 60px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(5px);
+      width: min(58%, 720px);
+      padding: 30px 0;
     }
 
     .surtitre {
@@ -65,7 +57,7 @@
 
     h1 {
       margin: 0 0 36px;
-      font-size: clamp(3rem, 8vw, 6rem);
+      font-size: clamp(3rem, 7vw, 6rem);
       font-weight: 700;
       line-height: 0.98;
       letter-spacing: -2px;
@@ -94,18 +86,29 @@
       box-shadow: 0 11px 0 #c87924;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 700px) {
       body {
-        background-position: 58% center;
+        align-items: flex-end;
+        padding: 28px;
+        background-position: 65% center;
+      }
+
+      body::before {
+        background: linear-gradient(
+          0deg,
+          rgba(12, 13, 40, 0.95) 0%,
+          rgba(12, 13, 40, 0.75) 48%,
+          rgba(12, 13, 40, 0.08) 100%
+        );
       }
 
       main {
         width: 100%;
-        padding: 38px 20px;
+        padding: 0 0 20px;
       }
 
-      .surtitre {
-        font-size: 0.8rem;
+      h1 {
+        font-size: clamp(2.8rem, 13vw, 4.5rem);
       }
     }
   </style>
