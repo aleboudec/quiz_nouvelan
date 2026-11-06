@@ -184,6 +184,7 @@
 
       try {
         const nouveauJoueur = push(ref(db, "joueurs"));
+        localStorage.setItem("idJoueur", nouveauJoueur.key);
         joueurId = nouveauJoueur.key;
 
         await set(nouveauJoueur, {
