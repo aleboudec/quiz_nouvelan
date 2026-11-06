@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Régie — Quiz d’Alan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px;
+      display: grid;
+      place-items: center;
+      background: #171735;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+    }
+
+    main {
+      width: min(800px, 100%);
+    }
+
+    .entete {
+      margin-bottom: 34px;
+      text-align: center;
+    }
+
+    .entete p {
+      margin: 0 0 8px;
+      color: #ffcf4a;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.5rem, 7vw, 4rem);
+    }
+
+    .commandes {
+      display: grid;
+      gap: 18px;
+    }
+
+    .bouton {
+      min-height: 100px;
+      padding: 20px 26px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 22px;
+      background: #25254d;
+      color: white;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .bouton:hover {
+      transform: translateY(-3px);
+      background: #303064;
+    }
+
+    .icone {
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      background: #ffcf4a;
+      color: #171735;
+      font-size: 1.8rem;
+    }
+
+    .texte-bouton strong {
+      display: block;
+      font-size: 1.5rem;
+    }
+
+    .texte-bouton small {
+      display: block;
+      margin-top: 5px;
+      color: #c9c9df;
+      font-size: 1rem;
+    }
+
+    .statut {
+      min-height: 28px;
+      margin: 24px 0 0;
+      color: #c9c9df;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      body {
+        padding: 20px;
+      }
+
+      .bouton {
+        min-height: 88px;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header class="entete">
+      <p>Régie animateur</p>
+      <h1>Quiz d’Alan 🎤</h1>
+    </header>
+
+    <section class="commandes">
+      <button class="bouton" id="intro">
+        <span class="icone">🔊</span>
+        <span class="texte-bouton">
+          <strong>Intro sonore</strong>
+          <small>Lancer la musique d’introduction</small>
+        </span>
+      </button>
+
+      <button class="bouton" id="lancer">
+        <span class="icone">▶️</span>
+        <span class="texte-bouton">
+          <strong>Lancer le jeu</strong>
+          <small>Ouvrir la première question</small>
+        </span>
+      </button>
+
+      <button class="bouton" id="classement">
+        <span class="icone">🏆</span>
+        <span class="texte-bouton">
+          <strong>Afficher le classement</strong>
+          <small>Montrer les scores des équipes</small>
+        </span>
+      </button>
+    </section>
+
+    <p class="statut" id="statut">En attente de tes commandes…</p>
+
+    <!-- Mets ton fichier audio dans le même dossier et nomme-le intro.mp3 -->
+    <audio id="sonIntro" src="intro.mp3"></audio>
+  </main>
+
+  <script>
+    const statut = document.getElementById("statut");
+    const sonIntro = document.getElementById("sonIntro");
+
+    document.getElementById("intro").addEventListener("click", async () => {
+      try {
+        sonIntro.currentTime = 0;
+        await sonIntro.play();
+        statut.textContent = "Intro sonore lancée 🔊";
+      } catch {
+        statut.textContent = "Ajoute le fichier intro.mp3 dans le dossier du site.";
+      }
+    });
+
+    document.getElementById("lancer").addEventListener("click", () => {
+      statut.textContent = "Le jeu est lancé ! (La fonction sera reliée aux questions ensuite.)";
+    });
+
+    document.getElementById("classement").addEventListener("click", () => {
+      statut.textContent = "Le classement sera affiché ici quand les scores seront disponibles.";
+    });
+  </script>
+</body>
+</html>
