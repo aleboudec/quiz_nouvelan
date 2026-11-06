@@ -112,7 +112,13 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+    import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  onValue
+} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
@@ -148,8 +154,15 @@
           rejointLe: Date.now()
         });
 
-        localStorage.setItem("pseudoJoueur", pseudo);
-        message.textContent = "Tu as rejoint la partie ! Regarde l’écran d’accueil 🎉";
+       message.textContent = "Tu as rejoint la partie ! En attente du lancement…";
+formulaire.querySelector("button").disabled = true;
+
+// Le téléphone attend le signal envoyé depuis la tablette
+onValue(ref(db, "partie/etat"), (snapshot) => {
+  if (snapshot.val() === "jeu_lance") {
+    window.location.href = "question.html";
+  }
+});
       } catch (error) {
         console.error(error);
         message.textContent = "Erreur de connexion. Réessaie dans un instant.";
