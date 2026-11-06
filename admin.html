@@ -110,6 +110,86 @@
       text-align: center;
     }
 
+    /* Gestion des joueurs */
+    #gestion-joueurs {
+      display: none;
+      margin-top: 22px;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 22px;
+      background: #202044;
+    }
+
+    #gestion-joueurs.visible {
+      display: block;
+    }
+
+    .entete-joueurs {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .entete-joueurs h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    #compteur-joueurs {
+      color: #ffcf4a;
+    }
+
+    #liste-joueurs {
+      display: grid;
+      gap: 10px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .ligne-joueur {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .pseudo-joueur {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .supprimer-joueur {
+      flex: 0 0 auto;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 10px;
+      background: #d94c5c;
+      color: white;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .supprimer-joueur:hover {
+      background: #f15c6d;
+    }
+
+    .supprimer-joueur:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .message-liste {
+      color: #c9c9df;
+      text-align: center;
+    }
+
     @media (max-width: 500px) {
       body {
         padding: 20px;
@@ -118,6 +198,19 @@
       .bouton {
         min-height: 88px;
         padding: 16px;
+        gap: 14px;
+      }
+
+      .texte-bouton strong {
+        font-size: 1.25rem;
+      }
+
+      #gestion-joueurs {
+        padding: 16px;
+      }
+
+      .ligne-joueur {
+        align-items: flex-start;
       }
     }
   </style>
@@ -136,6 +229,14 @@
         <span class="texte-bouton">
           <strong>Intro sonore</strong>
           <small>Lancer la musique d’introduction</small>
+        </span>
+      </button>
+
+      <button class="bouton" id="gestion">
+        <span class="icone">🧑‍🤝‍🧑</span>
+        <span class="texte-bouton">
+          <strong>Gestion des joueurs</strong>
+          <small>Afficher ou supprimer des joueurs</small>
         </span>
       </button>
 
@@ -164,9 +265,20 @@
       </button>
     </section>
 
+    <section id="gestion-joueurs" aria-live="polite">
+      <div class="entete-joueurs">
+        <h2>Joueurs inscrits</h2>
+        <span id="compteur-joueurs">0 joueur</span>
+      </div>
+
+      <ul id="liste-joueurs">
+        <li class="message-liste">Chargement des joueurs…</li>
+      </ul>
+    </section>
+
     <p class="statut" id="statut">En attente de tes commandes…</p>
 
-    <!-- Mets ton fichier audio dans le même dossier et nomme-le intro.mp3 -->
+    <!-- Mets intro.mp3 dans le même dossier que admin.html -->
     <audio id="sonIntro" src="intro.mp3"></audio>
   </main>
 
@@ -176,7 +288,9 @@
       getDatabase,
       ref,
       get,
-      set
+      set,
+      update,
+      onValue
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -195,6 +309,108 @@
     const statut = document.getElementById("statut");
     const sonIntro = document.getElementById("sonIntro");
     const boutonEquipes = document.getElementById("creation-equipes");
+    const boutonGestion = document.getElementById("gestion");
+    const panneauGestion = document.getElementById("gestion-joueurs");
+    const listeJoueurs = document.getElementById("liste-joueurs");
+    const compteurJoueurs = document.getElementById("compteur-joueurs");
+
+    // Ouvrir ou fermer la liste des joueurs
+    boutonGestion.addEventListener("click", () => {
+      const ouvert = panneauGestion.classList.toggle("visible");
+      boutonGestion.setAttribute("aria-expanded", String(ouvert));
+
+      if (ouvert) {
+        panneauGestion.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+      }
+    });
+
+    // La liste se met à jour automatiquement quand Firebase change
+    onValue(ref(db, "joueurs"), (snapshot) => {
+      const donneesJoueurs = snapshot.val() || {};
+      const joueurs = Object.entries(donneesJoueurs)
+        .filter(([, joueur]) => joueur && joueur.pseudo);
+
+      compteurJoueurs.textContent =
+        `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""}`;
+
+      listeJoueurs.replaceChildren();
+
+      if (joueurs.length === 0) {
+        const message = document.createElement("li");
+        message.className = "message-liste";
+        message.textContent = "Aucun joueur inscrit pour le moment.";
+        listeJoueurs.appendChild(message);
+        return;
+      }
+
+      joueurs.forEach(([id, joueur]) => {
+        const ligne = document.createElement("li");
+        ligne.className = "ligne-joueur";
+
+        const pseudo = document.createElement("span");
+        pseudo.className = "pseudo-joueur";
+        pseudo.textContent = `🎉 ${joueur.pseudo}`;
+
+        const boutonSupprimer = document.createElement("button");
+        boutonSupprimer.className = "supprimer-joueur";
+        boutonSupprimer.type = "button";
+        boutonSupprimer.textContent = "Supprimer";
+        boutonSupprimer.setAttribute(
+          "aria-label",
+          `Supprimer le joueur ${joueur.pseudo}`
+        );
+
+        boutonSupprimer.addEventListener("click", async () => {
+          const confirmer = confirm(
+            `Supprimer le joueur « ${joueur.pseudo} » ?`
+          );
+
+          if (!confirmer) return;
+
+          boutonSupprimer.disabled = true;
+          statut.textContent = `Suppression de ${joueur.pseudo}…`;
+
+          try {
+            // Supprime le joueur de la liste et, s'il est dans une équipe,
+            // supprime aussi son entrée dans partie/equipes.
+            const changements = {
+              [`joueurs/${id}`]: null
+            };
+
+            const equipesSnapshot = await get(ref(db, "partie/equipes"));
+            const equipes = equipesSnapshot.val() || {};
+
+            for (const [cleEquipe, equipe] of Object.entries(equipes)) {
+              if (equipe?.joueurs?.[id]) {
+                changements[`partie/equipes/${cleEquipe}/joueurs/${id}`] = null;
+              }
+            }
+
+            await update(ref(db), changements);
+            statut.textContent = `Le joueur « ${joueur.pseudo} » a été supprimé.`;
+          } catch (error) {
+            console.error("Erreur lors de la suppression :", error);
+            statut.textContent =
+              "Impossible de supprimer ce joueur. Vérifie la connexion et les règles Firebase.";
+            boutonSupprimer.disabled = false;
+          }
+        });
+
+        ligne.append(pseudo, boutonSupprimer);
+        listeJoueurs.appendChild(ligne);
+      });
+    }, (error) => {
+      console.error("Erreur lors du chargement des joueurs :", error);
+      listeJoueurs.replaceChildren();
+
+      const message = document.createElement("li");
+      message.className = "message-liste";
+      message.textContent = "Impossible de charger les joueurs.";
+      listeJoueurs.appendChild(message);
+    });
 
     document.getElementById("intro").addEventListener("click", async () => {
       try {
@@ -212,7 +428,6 @@
       statut.textContent = "Création des équipes en cours…";
 
       try {
-        // Récupère les joueurs enregistrés dans Firebase
         const snapshot = await get(ref(db, "joueurs"));
         const donneesJoueurs = snapshot.val() || {};
 
@@ -245,7 +460,7 @@
           };
         }
 
-        // Répartit les joueurs à tour de rôle pour équilibrer les équipes
+        // Répartit les joueurs entre les équipes
         joueurs.forEach((joueur, index) => {
           const numeroEquipe = (index % nombreEquipes) + 1;
 
@@ -254,14 +469,14 @@
           };
         });
 
-        // Enregistre les équipes dans Firebase
         await set(ref(db, "partie/equipes"), equipes);
 
         statut.textContent =
           `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""} réparti${joueurs.length > 1 ? "s" : ""} dans ${nombreEquipes} équipe${nombreEquipes > 1 ? "s" : ""} 🎉`;
       } catch (error) {
         console.error("Erreur lors de la création des équipes :", error);
-        statut.textContent = "Impossible de créer les équipes. Vérifie la connexion et les règles Firebase.";
+        statut.textContent =
+          "Impossible de créer les équipes. Vérifie la connexion et les règles Firebase.";
       } finally {
         boutonEquipes.disabled = false;
       }
@@ -273,12 +488,14 @@
         statut.textContent = "Le jeu est lancé ! Les joueurs vont être redirigés 🎉";
       } catch (error) {
         console.error(error);
-        statut.textContent = "Impossible de lancer le jeu. Vérifie la connexion à Firebase.";
+        statut.textContent =
+          "Impossible de lancer le jeu. Vérifie la connexion à Firebase.";
       }
     });
 
     document.getElementById("classement").addEventListener("click", () => {
-      statut.textContent = "Le classement sera affiché ici quand les scores seront disponibles.";
+      statut.textContent =
+        "Le classement sera affiché ici quand les scores seront disponibles.";
     });
   </script>
 </body>
