@@ -10,7 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -33,6 +35,7 @@
         rgba(12, 13, 40, 0.82) 48%,
         rgba(12, 13, 40, 0.28) 100%
       );
+      pointer-events: none;
     }
 
     .contenu {
@@ -54,7 +57,9 @@
       text-shadow: 4px 5px 0 #09091d;
     }
 
-    h1 span { color: #ffcf4a; }
+    h1 span {
+      color: #ffcf4a;
+    }
 
     .bouton {
       display: inline-block;
@@ -69,15 +74,17 @@
       transition: transform 0.2s;
     }
 
-    .bouton:hover { transform: translateY(-4px); }
+    .bouton:hover {
+      transform: translateY(-4px);
+    }
 
     .carte {
       padding: 28px;
-      border: 1px solid rgba(255,255,255,0.25);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 24px;
       background: rgba(20, 21, 57, 0.82);
       backdrop-filter: blur(8px);
-      box-shadow: 0 15px 45px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
     }
 
     .carte h2 {
@@ -90,24 +97,31 @@
       color: #ffcf4a;
     }
 
+    /* Les pseudos sont répartis en colonnes, sans défilement dans la liste */
     #liste-joueurs {
       display: grid;
-      gap: 10px;
-      max-height: 45vh;
-      overflow-y: auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      max-height: none;
+      overflow: visible;
       padding: 0;
       margin: 0;
       list-style: none;
     }
 
     #liste-joueurs li {
-      padding: 12px 16px;
+      min-width: 0;
+      padding: 8px 10px;
       border-radius: 12px;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.12);
       overflow-wrap: anywhere;
+      text-align: center;
+      font-size: 0.95rem;
     }
 
-    .vide { color: #d0d0e5; }
+    .vide {
+      color: #d0d0e5;
+    }
 
     @media (max-width: 750px) {
       body {
@@ -118,9 +132,9 @@
       body::before {
         background: linear-gradient(
           0deg,
-          rgba(12,13,40,0.97) 0%,
-          rgba(12,13,40,0.78) 65%,
-          rgba(12,13,40,0.35) 100%
+          rgba(12, 13, 40, 0.97) 0%,
+          rgba(12, 13, 40, 0.78) 65%,
+          rgba(12, 13, 40, 0.35) 100%
         );
       }
 
@@ -130,9 +144,23 @@
         padding: 30px 0;
       }
 
-      h1 { font-size: clamp(2.8rem, 12vw, 4.5rem); }
-      .carte { padding: 22px; }
-      #liste-joueurs { max-height: 35vh; }
+      h1 {
+        font-size: clamp(2.8rem, 12vw, 4.5rem);
+      }
+
+      .carte {
+        padding: 22px;
+      }
+
+      #liste-joueurs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 420px) {
+      #liste-joueurs {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -140,13 +168,18 @@
 <body>
   <main class="contenu">
     <section>
-      <h1>Alan t’en pose,<br><span>des questions&nbsp;!</span></h1>
-      <a class="bouton" href="jeu.html">Jouer&nbsp;! 🎉</a>
+      <h1>
+        Alan t’en pose,<br>
+        <span>des questions&nbsp;!</span>
+      </h1>
+
+      
     </section>
 
     <section class="carte" aria-live="polite">
       <h2>🎮 Joueurs connectés</h2>
       <p id="compteur">Chargement…</p>
+
       <ul id="liste-joueurs">
         <li class="vide">En attente des joueurs…</li>
       </ul>
@@ -154,8 +187,15 @@
   </main>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
@@ -169,37 +209,43 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
     const liste = document.getElementById("liste-joueurs");
     const compteur = document.getElementById("compteur");
 
-    onValue(ref(db, "joueurs"), (snapshot) => {
-      const joueurs = snapshot.val() || {};
-      const pseudos = Object.values(joueurs)
-        .map(joueur => joueur.pseudo)
-        .filter(Boolean);
+    onValue(
+      ref(db, "joueurs"),
+      (snapshot) => {
+        const joueurs = snapshot.val() || {};
 
-      compteur.textContent =
-        `${pseudos.length} joueur${pseudos.length > 1 ? "s" : ""}`;
+        const pseudos = Object.values(joueurs)
+          .map((joueur) => joueur.pseudo)
+          .filter(Boolean);
 
-      liste.replaceChildren();
+        compteur.textContent =
+          `${pseudos.length} joueur${pseudos.length > 1 ? "s" : ""}`;
 
-      if (pseudos.length === 0) {
-        const ligne = document.createElement("li");
-        ligne.className = "vide";
-        ligne.textContent = "En attente des joueurs…";
-        liste.appendChild(ligne);
-        return;
+        liste.replaceChildren();
+
+        if (pseudos.length === 0) {
+          const ligne = document.createElement("li");
+          ligne.className = "vide";
+          ligne.textContent = "En attente des joueurs…";
+          liste.appendChild(ligne);
+          return;
+        }
+
+        pseudos.forEach((pseudo) => {
+          const ligne = document.createElement("li");
+          ligne.textContent = `🎉 ${pseudo}`;
+          liste.appendChild(ligne);
+        });
+      },
+      (error) => {
+        compteur.textContent = "Impossible de charger les joueurs.";
+        console.error("Erreur Firebase :", error);
       }
-
-      pseudos.forEach((pseudo) => {
-        const ligne = document.createElement("li");
-        ligne.textContent = `🎉 ${pseudo}`;
-        liste.appendChild(ligne);
-      });
-    }, (error) => {
-      compteur.textContent = "Impossible de charger les joueurs.";
-      console.error(error);
-    });
+    );
   </script>
 </body>
 </html>
