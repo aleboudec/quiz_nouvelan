@@ -40,27 +40,27 @@
 
     /* Écran d’accueil visible au départ */
     #ecran-bienvenue {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      display: grid;
-      place-content: center;
-      padding: 24px;
-      padding-right: 10vw;
-      text-align: center;
-    }
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  padding: 24px;
+  padding-right: 10vw;
+  text-align: center;
+}
 
-    #ecran-bienvenue h1 {
-      margin: 0;
-      font-size: clamp(3rem, 10vw, 8rem);
-      line-height: 0.98;
-      letter-spacing: -2px;
-      text-shadow: 4px 5px 0 #09091d;
-    }
+#ecran-bienvenue h1 {
+  margin: 0;
+  font-size: clamp(3rem, 10vw, 8rem);
+  line-height: 0.98;
+  letter-spacing: -2px;
+  text-shadow: 4px 5px 0 #09091d;
+}
 
-    #ecran-bienvenue h1 span {
-      color: #ffcf4a;
-    }
+#ecran-bienvenue h1 span {
+  color: #ffcf4a;
+}
 
     #ecran-bienvenue p {
       margin: 20px 0 0;
@@ -237,6 +237,26 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
+    }
+
+    #activer-son {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 10;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #ffcf4a;
+      color: #171735;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #activer-son:disabled {
+      opacity: 0.8;
+      cursor: default;
     }
 
     @keyframes apparition {
@@ -446,13 +466,13 @@
 <body>
   <!-- Écran visible avant la commande de la régie -->
   <section id="ecran-bienvenue">
-    <div>
-      <h1>
-        Alan t’en pose,<br>
-        <span>des questions&nbsp;!</span>
-      </h1>
-    </div>
-  </section>
+  <div>
+    <h1>
+      Alan t’en pose,<br>
+      <span>des questions&nbsp;!</span>
+    </h1>
+  </div>
+</section>
 
   <!-- Écran du jeu, affiché quand la régie l’active -->
   <main class="contenu">
@@ -494,6 +514,8 @@
   <!-- Le fichier intro.wav doit être dans le même dossier que index.html -->
   <audio id="sonIntroPublic" src="intro.wav" preload="auto"></audio>
 
+  <button id="activer-son" type="button">🔊 Activer le son</button>
+
   <canvas id="feux-artifice" aria-hidden="true"></canvas>
 
   <script type="module">
@@ -505,7 +527,7 @@
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
+      apiKey: "AIzaSyB-Hv3dU-vuB8I0IAk3AUdIiqv1Ykmn4x8",
       authDomain: "nouvelan-a256f.firebaseapp.com",
       databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "nouvelan-a256f",
@@ -517,14 +539,33 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    const sonIntroPublic = document.getElementById("sonIntroPublic");
+    const boutonActiverSon = document.getElementById("activer-son");
+
+    // Clique une fois sur l’écran public pour autoriser le son.
+    boutonActiverSon.addEventListener("click", async () => {
+      try {
+        sonIntroPublic.muted = true;
+        await sonIntroPublic.play();
+        sonIntroPublic.pause();
+        sonIntroPublic.currentTime = 0;
+        sonIntroPublic.muted = false;
+
+        boutonActiverSon.textContent = "✅ Son activé";
+        boutonActiverSon.disabled = true;
+      } catch (error) {
+        console.error("Impossible d’activer le son :", error);
+        sonIntroPublic.muted = false;
+        boutonActiverSon.textContent = "⚠️ Vérifie intro.wav";
+      }
+    });
+
     // La régie commande l’écran en modifiant partie/affichage dans Firebase.
     onValue(ref(db, "partie/affichage"), (snapshot) => {
       document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
     });
 
     // La régie commande la musique via partie/introCommande.
-    const sonIntroPublic = document.getElementById("sonIntroPublic");
-
     onValue(
       ref(db, "partie/introCommande"),
       async (snapshot) => {
