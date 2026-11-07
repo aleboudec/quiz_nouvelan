@@ -40,21 +40,27 @@
 
     /* Écran d’accueil visible au départ */
     #ecran-bienvenue {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      display: grid;
-      place-content: center;
-      padding: 24px;
-      text-align: center;
-    }
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  padding: 24px;
+  padding-right: 10vw;
+  text-align: center;
+}
 
-    #ecran-bienvenue h1 {
-      margin: 0;
-      font-size: clamp(3rem, 10vw, 8rem);
-      line-height: 1;
-      text-shadow: 4px 5px 0 #09091d;
-    }
+#ecran-bienvenue h1 {
+  margin: 0;
+  font-size: clamp(3rem, 10vw, 8rem);
+  line-height: 0.98;
+  letter-spacing: -2px;
+  text-shadow: 4px 5px 0 #09091d;
+}
+
+#ecran-bienvenue h1 span {
+  color: #ffcf4a;
+}
 
     #ecran-bienvenue p {
       margin: 20px 0 0;
