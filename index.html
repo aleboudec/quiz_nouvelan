@@ -19,7 +19,7 @@
       min-height: 100vh;
       padding: 6vw;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       color: white;
       font-family: "Fredoka", Arial, sans-serif;
       background: #171735 url("animateur.png") center / cover no-repeat;
@@ -42,11 +42,15 @@
       position: relative;
       z-index: 1;
       width: min(1250px, 100%);
-      margin: auto;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: 0.9fr 1.1fr;
-      align-items: center;
+      align-items: start;
       gap: 40px;
+    }
+
+    .intro {
+      align-self: start;
     }
 
     h1 {
@@ -61,21 +65,31 @@
       color: #ffcf4a;
     }
 
-    .bouton {
-      display: inline-block;
-      padding: 17px 40px;
-      border-radius: 50px;
-      background: #ffcf4a;
-      color: #171735;
-      font-size: 1.3rem;
-      font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 7px 0 #c87924;
-      transition: transform 0.2s;
+    .bloc-qr {
+      width: fit-content;
+      max-width: 100%;
+      text-align: center;
     }
 
-    .bouton:hover {
-      transform: translateY(-4px);
+    .bloc-qr p {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+    }
+
+    #qr-code {
+      display: block;
+      width: min(220px, 60vw);
+      aspect-ratio: 1;
+      margin: 0 auto 10px;
+      padding: 8px;
+      border-radius: 12px;
+      background: white;
+    }
+
+    #lien-jeu-texte {
+      display: block;
+      color: #ffcf4a;
+      overflow-wrap: anywhere;
     }
 
     .panneaux {
@@ -398,7 +412,18 @@
         <span>des questions&nbsp;!</span>
       </h1>
 
-      
+      <div class="bloc-qr">
+        <p>📱 Scanne ce QR code pour rejoindre le jeu</p>
+
+        <a id="lien-jeu" href="jeu.html">
+          <img
+            id="qr-code"
+            alt="QR code pour accéder à la page du jeu"
+          >
+        </a>
+
+        <a id="lien-jeu-texte" href="jeu.html"></a>
+      </div>
     </section>
 
     <div class="panneaux">
@@ -441,6 +466,18 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    // Le QR code et le lien pointent vers jeu.html, dans le même dossier.
+    const urlJeu = new URL("jeu.html", window.location.href).href;
+
+    document.getElementById("lien-jeu").href = urlJeu;
+
+    const lienJeuTexte = document.getElementById("lien-jeu-texte");
+    lienJeuTexte.href = urlJeu;
+    lienJeuTexte.textContent = urlJeu;
+
+    document.getElementById("qr-code").src =
+      `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(urlJeu)}`;
 
     const listeJoueurs = document.getElementById("liste-joueurs");
     const compteurJoueurs = document.getElementById("compteur-joueurs");
