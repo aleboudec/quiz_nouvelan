@@ -1,1 +1,794 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Régie — Quiz d’Alan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    body {
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      background: #171735;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+    }
+
+    main {
+      width: min(1100px, 100%);
+      height: 100%;
+      max-height: 900px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .vue {
+      display: none;
+      flex: 1 1 auto;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .vue.active {
+      display: flex;
+    }
+
+    .entete {
+      flex: 0 0 auto;
+      margin: 0 0 18px;
+      text-align: center;
+    }
+
+    .entete p {
+      margin: 0 0 6px;
+      color: #ffcf4a;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+    }
+
+    .titre-section {
+      grid-column: 1 / -1;
+      margin: 0 0 2px;
+      color: #ffcf4a;
+      font-size: 1.2rem;
+    }
+
+    .commandes {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .bouton {
+      min-height: 82px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      background: #25254d;
+      color: white;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .bouton:hover {
+      transform: translateY(-2px);
+      background: #303064;
+    }
+
+    .bouton:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .icone {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: #ffcf4a;
+      color: #171735;
+      font-size: 1.25rem;
+    }
+
+    .texte-bouton {
+      min-width: 0;
+    }
+
+    .texte-bouton strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .texte-bouton small {
+      display: block;
+      margin-top: 4px;
+      color: #c9c9df;
+      font-size: 0.78rem;
+    }
+
+    .jeux {
+      margin-top: auto;
+      padding-top: 18px;
+    }
+
+    .jeux .titre-section {
+      margin-bottom: 10px;
+    }
+
+    .boutons-jeux {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .bouton-jeu {
+      min-height: 78px;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .bouton-jeu .texte-bouton strong {
+      font-size: 1.1rem;
+    }
+
+    /* Vue de gestion des joueurs */
+    .barre-gestion {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .barre-gestion h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    #compteur-joueurs {
+      color: #ffcf4a;
+      white-space: nowrap;
+    }
+
+    .bouton-retour {
+      flex: 0 0 auto;
+      padding: 9px 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #ffcf4a;
+      color: #171735;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #liste-joueurs {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      align-content: start;
+      align-items: start;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      list-style: none;
+    }
+
+    .ligne-joueur {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .infos-joueur {
+      min-width: 0;
+    }
+
+    .pseudo-joueur {
+      display: block;
+      overflow-wrap: anywhere;
+      font-weight: 600;
+    }
+
+    .etat-joueur {
+      display: block;
+      margin-top: 2px;
+      color: #ffcf4a;
+      font-size: 0.8rem;
+    }
+
+    .actions-joueur {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 5px;
+    }
+
+    .actions-joueur button {
+      padding: 7px 8px;
+      border: 0;
+      border-radius: 8px;
+      color: white;
+      font: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .actions-joueur button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .bloquer-joueur {
+      background: #b7781d;
+    }
+
+    .debloquer-joueur {
+      background: #258c60;
+    }
+
+    .supprimer-joueur {
+      background: #d94c5c;
+    }
+
+    .message-liste {
+      grid-column: 1 / -1;
+      padding: 16px;
+      color: #c9c9df;
+      text-align: center;
+    }
+
+    .statut {
+      flex: 0 0 auto;
+      min-height: 24px;
+      margin: 10px 0 0;
+      color: #c9c9df;
+      text-align: center;
+    }
+
+    @media (max-width: 850px) {
+      .commandes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+
+      .entete {
+        margin-bottom: 12px;
+      }
+
+      .commandes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .commandes .bouton {
+        min-height: 68px;
+        padding: 9px;
+        gap: 8px;
+      }
+
+      .commandes .icone {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+        font-size: 1.05rem;
+      }
+
+      .commandes .texte-bouton strong {
+        font-size: 0.9rem;
+      }
+
+      .commandes .texte-bouton small {
+        font-size: 0.7rem;
+      }
+
+      .jeux {
+        padding-top: 12px;
+      }
+
+      .boutons-jeux {
+        gap: 6px;
+      }
+
+      .bouton-jeu {
+        min-height: 56px;
+        padding: 6px;
+      }
+
+      .bouton-jeu .icone {
+        display: none;
+      }
+
+      .bouton-jeu .texte-bouton strong {
+        font-size: 0.9rem;
+      }
+
+      #liste-joueurs {
+        grid-template-columns: 1fr;
+      }
+
+      .barre-gestion {
+        gap: 6px;
+      }
+
+      .barre-gestion h2 {
+        font-size: 1.1rem;
+      }
+
+      .ligne-joueur {
+        padding: 6px 8px;
+      }
+
+      .actions-joueur {
+        gap: 4px;
+      }
+
+      .actions-joueur button {
+        padding: 6px;
+        font-size: 0.7rem;
+      }
+
+      .statut {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <!-- Accueil -->
+    <section id="vue-accueil" class="vue active">
+      <header class="entete">
+        <p>Régie animateur</p>
+        <h1>Quiz d’Alan 🎤</h1>
+      </header>
+
+      <!-- Commandes de gestion en haut -->
+      <section class="commandes" aria-label="Commandes de gestion">
+        <h2 class="titre-section">Gestion</h2>
+
+        <button class="bouton" id="intro" type="button">
+          <span class="icone">🔊</span>
+          <span class="texte-bouton">
+            <strong>Intro sonore</strong>
+            <small>Lancer la musique d’introduction</small>
+          </span>
+        </button>
+
+        <button class="bouton" id="gestion" type="button">
+          <span class="icone">🧑‍🤝‍🧑</span>
+          <span class="texte-bouton">
+            <strong>Gestion des joueurs</strong>
+            <small>Bloquer, débloquer ou supprimer</small>
+          </span>
+        </button>
+
+        <button class="bouton" id="creation-equipes" type="button">
+          <span class="icone">👥</span>
+          <span class="texte-bouton">
+            <strong>Création des équipes</strong>
+            <small>Équipes de 4 joueurs maximum</small>
+          </span>
+        </button>
+
+        <button class="bouton" id="supprimer-equipes" type="button">
+          <span class="icone">🗑️</span>
+          <span class="texte-bouton">
+            <strong>Supprimer les équipes</strong>
+            <small>Supprimer toutes les équipes</small>
+          </span>
+        </button>
+
+        <button class="bouton" id="classement" type="button">
+          <span class="icone">🏆</span>
+          <span class="texte-bouton">
+            <strong>Afficher le classement</strong>
+            <small>Montrer les scores</small>
+          </span>
+        </button>
+      </section>
+
+      <!-- Les cinq jeux en bas -->
+      <section class="jeux" aria-label="Lancer un jeu">
+        <h2 class="titre-section">Lancer un jeu</h2>
+
+        <div class="boutons-jeux">
+          <button class="bouton bouton-jeu" id="jeu-1" type="button">
+            <span class="icone">1</span>
+            <span class="texte-bouton"><strong>Jeu 1</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-2" type="button">
+            <span class="icone">2</span>
+            <span class="texte-bouton"><strong>Jeu 2</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-3" type="button">
+            <span class="icone">3</span>
+            <span class="texte-bouton"><strong>Jeu 3</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-4" type="button">
+            <span class="icone">4</span>
+            <span class="texte-bouton"><strong>Jeu 4</strong></span>
+          </button>
+
+          <button class="bouton bouton-jeu" id="jeu-5" type="button">
+            <span class="icone">5</span>
+            <span class="texte-bouton"><strong>Jeu 5</strong></span>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <!-- Gestion des joueurs : remplace l’accueil -->
+    <section id="vue-joueurs" class="vue" aria-live="polite">
+      <div class="barre-gestion">
+        <button class="bouton-retour" id="retour" type="button">
+          ← Retour
+        </button>
+
+        <h2>Joueurs inscrits</h2>
+        <span id="compteur-joueurs">0 joueur</span>
+      </div>
+
+      <ul id="liste-joueurs">
+        <li class="message-liste">Chargement des joueurs…</li>
+      </ul>
+    </section>
+
+    <p class="statut" id="statut">En attente de tes commandes…</p>
+
+    <!-- Place intro.mp3 dans le même dossier que ce fichier HTML -->
+    <audio id="sonIntro" src="intro.mp3"></audio>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      set,
+      update,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const statut = document.getElementById("statut");
+    const sonIntro = document.getElementById("sonIntro");
+    const listeJoueurs = document.getElementById("liste-joueurs");
+    const compteurJoueurs = document.getElementById("compteur-joueurs");
+    const vueAccueil = document.getElementById("vue-accueil");
+    const vueJoueurs = document.getElementById("vue-joueurs");
+
+    function afficherVue(vue) {
+      vueAccueil.classList.toggle("active", vue === "accueil");
+      vueJoueurs.classList.toggle("active", vue === "joueurs");
+    }
+
+    document.getElementById("gestion").addEventListener("click", () => {
+      afficherVue("joueurs");
+    });
+
+    document.getElementById("retour").addEventListener("click", () => {
+      afficherVue("accueil");
+    });
+
+    // Affichage en temps réel des joueurs
+    onValue(
+      ref(db, "joueurs"),
+      (snapshot) => {
+        const donnees = snapshot.val() || {};
+        const joueurs = Object.entries(donnees)
+          .filter(([, joueur]) => joueur && joueur.pseudo);
+
+        compteurJoueurs.textContent =
+          `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""}`;
+
+        listeJoueurs.replaceChildren();
+
+        if (joueurs.length === 0) {
+          const message = document.createElement("li");
+          message.className = "message-liste";
+          message.textContent = "Aucun joueur inscrit pour le moment.";
+          listeJoueurs.appendChild(message);
+          return;
+        }
+
+        joueurs.forEach(([id, joueur]) => {
+          const ligne = document.createElement("li");
+          ligne.className = "ligne-joueur";
+
+          const infos = document.createElement("div");
+          infos.className = "infos-joueur";
+
+          const pseudo = document.createElement("span");
+          pseudo.className = "pseudo-joueur";
+          pseudo.textContent = `🎉 ${joueur.pseudo}`;
+
+          const etat = document.createElement("span");
+          etat.className = "etat-joueur";
+          etat.textContent = joueur.bloque ? "Bloqué" : "Débloqué";
+
+          infos.append(pseudo, etat);
+
+          const actions = document.createElement("div");
+          actions.className = "actions-joueur";
+
+          const boutonBloquer = document.createElement("button");
+          boutonBloquer.type = "button";
+          boutonBloquer.className = "bloquer-joueur";
+          boutonBloquer.textContent = "Bloquer";
+          boutonBloquer.disabled = joueur.bloque === true;
+          boutonBloquer.addEventListener("click", () => {
+            modifierBlocage(id, true, joueur.pseudo);
+          });
+
+          const boutonDebloquer = document.createElement("button");
+          boutonDebloquer.type = "button";
+          boutonDebloquer.className = "debloquer-joueur";
+          boutonDebloquer.textContent = "Débloquer";
+          boutonDebloquer.disabled = joueur.bloque !== true;
+          boutonDebloquer.addEventListener("click", () => {
+            modifierBlocage(id, false, joueur.pseudo);
+          });
+
+          const boutonSupprimer = document.createElement("button");
+          boutonSupprimer.type = "button";
+          boutonSupprimer.className = "supprimer-joueur";
+          boutonSupprimer.textContent = "Supprimer";
+
+          boutonSupprimer.addEventListener("click", async () => {
+            if (!confirm(`Supprimer le joueur « ${joueur.pseudo} » ?`)) {
+              return;
+            }
+
+            boutonSupprimer.disabled = true;
+            statut.textContent = `Suppression de ${joueur.pseudo}…`;
+
+            try {
+              const changements = {
+                [`joueurs/${id}`]: null
+              };
+
+              const equipesSnapshot = await get(ref(db, "partie/equipes"));
+              const equipes = equipesSnapshot.val() || {};
+
+              for (const [cleEquipe, equipe] of Object.entries(equipes)) {
+                if (equipe?.joueurs?.[id]) {
+                  changements[
+                    `partie/equipes/${cleEquipe}/joueurs/${id}`
+                  ] = null;
+                }
+              }
+
+              await update(ref(db), changements);
+              statut.textContent =
+                `Le joueur « ${joueur.pseudo} » a été supprimé.`;
+            } catch (error) {
+              console.error("Erreur lors de la suppression :", error);
+              statut.textContent =
+                "Impossible de supprimer ce joueur. Vérifie les règles Firebase.";
+              boutonSupprimer.disabled = false;
+            }
+          });
+
+          actions.append(boutonBloquer, boutonDebloquer, boutonSupprimer);
+          ligne.append(infos, actions);
+          listeJoueurs.appendChild(ligne);
+        });
+      },
+      (error) => {
+        console.error("Erreur lors du chargement des joueurs :", error);
+        listeJoueurs.replaceChildren();
+
+        const message = document.createElement("li");
+        message.className = "message-liste";
+        message.textContent = "Impossible de charger les joueurs.";
+        listeJoueurs.appendChild(message);
+      }
+    );
+
+    async function modifierBlocage(id, bloque, pseudo) {
+      try {
+        await update(ref(db), {
+          [`joueurs/${id}/bloque`]: bloque
+        });
+
+        statut.textContent = bloque
+          ? `Le joueur « ${pseudo} » est bloqué.`
+          : `Le joueur « ${pseudo} » est débloqué.`;
+      } catch (error) {
+        console.error("Erreur lors du changement de statut :", error);
+        statut.textContent =
+          "Impossible de modifier le statut du joueur. Vérifie les règles Firebase.";
+      }
+    }
+
+    document.getElementById("intro").addEventListener("click", async () => {
+      try {
+        sonIntro.currentTime = 0;
+        await sonIntro.play();
+        statut.textContent = "Intro sonore lancée 🔊";
+      } catch (error) {
+        console.error("Erreur lors de la lecture de l’intro :", error);
+        statut.textContent =
+          "Impossible de lire l’intro. Vérifie que intro.mp3 est dans le dossier du site.";
+      }
+    });
+
+    // Création des équipes : les joueurs bloqués sont ignorés
+    document
+      .getElementById("creation-equipes")
+      .addEventListener("click", async (event) => {
+        const bouton = event.currentTarget;
+        bouton.disabled = true;
+        statut.textContent = "Création des équipes en cours…";
+
+        try {
+          const snapshot = await get(ref(db, "joueurs"));
+          const donnees = snapshot.val() || {};
+
+          const joueurs = Object.entries(donnees)
+            .filter(([, joueur]) => joueur && joueur.pseudo && !joueur.bloque)
+            .map(([id, joueur]) => ({
+              id,
+              pseudo: joueur.pseudo
+            }));
+
+          if (joueurs.length === 0) {
+            statut.textContent =
+              "Aucun joueur débloqué n’est disponible pour créer les équipes.";
+            return;
+          }
+
+          // Mélange aléatoire des joueurs
+          for (let i = joueurs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [joueurs[i], joueurs[j]] = [joueurs[j], joueurs[i]];
+          }
+
+          // Crée assez d’équipes pour ne pas dépasser 4 joueurs par équipe
+          const nombreEquipes = Math.ceil(joueurs.length / 4);
+          const equipes = {};
+
+          for (let i = 1; i <= nombreEquipes; i++) {
+            equipes[`equipe${i}`] = {
+              nom: `Équipe ${i}`,
+              joueurs: {}
+            };
+          }
+
+          joueurs.forEach((joueur, index) => {
+            const numeroEquipe = (index % nombreEquipes) + 1;
+
+            equipes[`equipe${numeroEquipe}`].joueurs[joueur.id] = {
+              pseudo: joueur.pseudo
+            };
+          });
+
+          await set(ref(db, "partie/equipes"), equipes);
+
+          statut.textContent =
+            `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""} réparti${joueurs.length > 1 ? "s" : ""} dans ${nombreEquipes} équipe${nombreEquipes > 1 ? "s" : ""} 🎉`;
+        } catch (error) {
+          console.error("Erreur lors de la création des équipes :", error);
+          statut.textContent =
+            "Impossible de créer les équipes. Vérifie la connexion et les règles Firebase.";
+        } finally {
+          bouton.disabled = false;
+        }
+      });
+
+    // Supprime toutes les équipes
+    document
+      .getElementById("supprimer-equipes")
+      .addEventListener("click", async (event) => {
+        if (!confirm("Supprimer toutes les équipes ?")) {
+          return;
+        }
+
+        const bouton = event.currentTarget;
+        bouton.disabled = true;
+
+        try {
+          await set(ref(db, "partie/equipes"), null);
+          statut.textContent = "Toutes les équipes ont été supprimées.";
+        } catch (error) {
+          console.error("Erreur lors de la suppression des équipes :", error);
+          statut.textContent =
+            "Impossible de supprimer les équipes. Vérifie les règles Firebase.";
+        } finally {
+          bouton.disabled = false;
+        }
+      });
+
+    // Les boutons envoient jeu_1_lance, jeu_2_lance, etc. dans Firebase
+    for (let numero = 1; numero <= 5; numero++) {
+      document
+        .getElementById(`jeu-${numero}`)
+        .addEventListener("click", async (event) => {
+          const bouton = event.currentTarget;
+          bouton.disabled = true;
+          statut.textContent = `Lancement du jeu ${numero}…`;
+
+          try {
+            await set(ref(db, "partie/etat"), `jeu_${numero}_lance`);
+            statut.textContent = `Le jeu ${numero} est lancé !`;
+          } catch (error) {
+            console.error(`Erreur lors du lancement du jeu ${numero} :`, error);
+            statut.textContent =
+              `Impossible de lancer le jeu ${numero}. Vérifie la connexion à Firebase.`;
+          } finally {
+            bouton.disabled = false;
+          }
+        });
+    }
+
+    document.getElementById("classement").addEventListener("click", () => {
+      statut.textContent =
+        "Le classement sera affiché ici quand les scores seront disponibles.";
+    });
+  </script>
+</body>
+</html>
