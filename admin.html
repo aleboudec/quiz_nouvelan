@@ -382,14 +382,13 @@
 
 <body>
   <main>
-    <!-- Accueil -->
+    <!-- Accueil de la régie -->
     <section id="vue-accueil" class="vue active">
       <header class="entete">
         <p>Régie animateur</p>
         <h1>Quiz d’Alan 🎤</h1>
       </header>
 
-      <!-- Commandes de gestion en haut -->
       <section class="commandes" aria-label="Commandes de gestion">
         <h2 class="titre-section">Gestion</h2>
 
@@ -401,11 +400,11 @@
           </span>
         </button>
 
-        <button class="bouton" id="ouvrir-accueil" type="button">
+        <button class="bouton" id="afficher-jeu" type="button">
           <span class="icone">📺</span>
           <span class="texte-bouton">
-            <strong>Afficher l’accueil</strong>
-            <small>Ouvrir la page projetée au public</small>
+            <strong>Afficher l’écran du jeu</strong>
+            <small>Afficher le QR code et les joueurs</small>
           </span>
         </button>
 
@@ -442,7 +441,6 @@
         </button>
       </section>
 
-      <!-- Les cinq jeux en bas -->
       <section class="jeux" aria-label="Lancer un jeu">
         <h2 class="titre-section">Lancer un jeu</h2>
 
@@ -475,7 +473,7 @@
       </section>
     </section>
 
-    <!-- Gestion des joueurs : remplace l’accueil -->
+    <!-- Gestion des joueurs -->
     <section id="vue-joueurs" class="vue" aria-live="polite">
       <div class="barre-gestion">
         <button class="bouton-retour" id="retour" type="button">
@@ -541,12 +539,24 @@
       afficherVue("accueil");
     });
 
-    document
-    .getElementById("ouvrir-accueil")
-    .addEventListener("click", () => {
-      window.open("accueil.html", "ecran-public");
-      statut.textContent = "La page d’accueil a été ouverte.";
+    // Envoie une commande à index.html via Firebase.
+    document.getElementById("afficher-jeu").addEventListener("click", async (event) => {
+      const bouton = event.currentTarget;
+      bouton.disabled = true;
+      statut.textContent = "Affichage de l’écran du jeu…";
+
+      try {
+        await set(ref(db, "partie/affichage"), "jeu");
+        statut.textContent = "L’écran du jeu est affiché.";
+      } catch (error) {
+        console.error("Erreur lors de l’affichage du jeu :", error);
+        statut.textContent =
+          "Impossible d’afficher le jeu. Vérifie la connexion et les règles Firebase.";
+      } finally {
+        bouton.disabled = false;
+      }
     });
+
     // Affichage en temps réel des joueurs
     onValue(
       ref(db, "joueurs"),
