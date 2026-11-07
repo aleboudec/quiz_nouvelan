@@ -483,6 +483,9 @@
     </div>
   </main>
 
+  <!-- Le fichier intro.wav doit être dans le même dossier que index.html -->
+  <audio id="sonIntroPublic" src="intro.wav" preload="auto"></audio>
+
   <canvas id="feux-artifice" aria-hidden="true"></canvas>
 
   <script type="module">
@@ -509,6 +512,31 @@
     // La régie commande l’écran en modifiant partie/affichage dans Firebase.
     onValue(ref(db, "partie/affichage"), (snapshot) => {
       document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
+    });
+
+    // La régie commande la musique via partie/introCommande.
+    const sonIntroPublic = document.getElementById("sonIntroPublic");
+
+    onValue(ref(db, "partie/introCommande"), async (snapshot) => {
+      const commande = snapshot.val();
+
+      if (commande?.action === "lecture") {
+        sonIntroPublic.currentTime = 0;
+
+        try {
+          await sonIntroPublic.play();
+        } catch (error) {
+          console.error(
+            "Impossible de lancer le son sur l’écran public :",
+            error
+          );
+        }
+      }
+
+      if (commande?.action === "arret") {
+        sonIntroPublic.pause();
+        sonIntroPublic.currentTime = 0;
+      }
     });
 
     // Le QR code et le lien pointent vers jeu.html, dans le même dossier.
