@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alan t’en pose, des questions !</title>
+  <title>Quiz d’Alan</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,15 +38,48 @@
       pointer-events: none;
     }
 
+    /* Écran d’accueil visible au départ */
+    #ecran-bienvenue {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #ecran-bienvenue h1 {
+      margin: 0;
+      font-size: clamp(3rem, 10vw, 8rem);
+      line-height: 1;
+      text-shadow: 4px 5px 0 #09091d;
+    }
+
+    #ecran-bienvenue p {
+      margin: 20px 0 0;
+      color: #ffcf4a;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+    }
+
+    /* L’écran du jeu est caché tant que la régie ne l’a pas demandé */
     .contenu {
+      display: none;
       position: relative;
       z-index: 1;
       width: min(1250px, 100%);
       margin: 0 auto;
-      display: grid;
       grid-template-columns: 0.9fr 1.1fr;
       align-items: start;
       gap: 40px;
+    }
+
+    body.mode-jeu .contenu {
+      display: grid;
+    }
+
+    body.mode-jeu #ecran-bienvenue {
+      display: none;
     }
 
     .intro {
@@ -61,7 +94,7 @@
       text-shadow: 4px 5px 0 #09091d;
     }
 
-    h1 span {
+    .intro h1 span {
       color: #ffcf4a;
     }
 
@@ -211,7 +244,7 @@
       }
     }
 
-    /* Mode plein écran : les quatre équipes restent visibles */
+    /* Mode plein écran : les équipes restent visibles */
     body.equipes-creees {
       display: block;
       width: 100%;
@@ -342,7 +375,7 @@
         padding: 25px 0;
       }
 
-      h1 {
+      .intro h1 {
         font-size: clamp(2.8rem, 12vw, 4.5rem);
       }
     }
@@ -405,6 +438,15 @@
 </head>
 
 <body>
+  <!-- Écran visible avant la commande de la régie -->
+  <section id="ecran-bienvenue">
+    <div>
+      <h1>Bienvenue&nbsp;!</h1>
+      <p>Le jeu va bientôt commencer…</p>
+    </div>
+  </section>
+
+  <!-- Écran du jeu, affiché quand la régie l’active -->
   <main class="contenu">
     <section class="intro">
       <h1>
@@ -416,10 +458,7 @@
         <p>📱 Scanne ce QR code pour rejoindre le jeu</p>
 
         <a id="lien-jeu" href="jeu.html">
-          <img
-            id="qr-code"
-            alt="QR code pour accéder à la page du jeu"
-          >
+          <img id="qr-code" alt="QR code pour accéder à la page du jeu">
         </a>
 
         <a id="lien-jeu-texte" href="jeu.html"></a>
@@ -466,6 +505,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    // La régie commande l’écran en modifiant partie/affichage dans Firebase.
+    onValue(ref(db, "partie/affichage"), (snapshot) => {
+      document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
+    });
 
     // Le QR code et le lien pointent vers jeu.html, dans le même dossier.
     const urlJeu = new URL("jeu.html", window.location.href).href;
