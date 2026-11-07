@@ -391,10 +391,10 @@
         <h2 class="titre-section">Gestion</h2>
 
         <button class="bouton" id="intro" type="button">
-          <span class="icone">🔊</span>
+          <span class="icone" id="icone-intro">🔊</span>
           <span class="texte-bouton">
-            <strong>Intro sonore</strong>
-            <small>Lancer la musique d’introduction</small>
+            <strong id="texte-intro">Intro sonore</strong>
+            <small id="aide-intro">Lancer la musique d’introduction</small>
           </span>
         </button>
 
@@ -487,8 +487,6 @@
     </section>
 
     <p class="statut" id="statut">En attente de tes commandes…</p>
-
-    <audio id="sonIntro" src="intro.wav"></audio>
   </main>
 
   <script type="module">
@@ -503,7 +501,7 @@
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyB-Hv3dU-vuB8U0IAk3AUdIiqv1Ykmn4x8",
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
       authDomain: "nouvelan-a256f.firebaseapp.com",
       databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "nouvelan-a256f",
@@ -516,7 +514,6 @@
     const db = getDatabase(app);
 
     const statut = document.getElementById("statut");
-    const sonIntro = document.getElementById("sonIntro");
     const listeJoueurs = document.getElementById("liste-joueurs");
     const compteurJoueurs = document.getElementById("compteur-joueurs");
     const vueAccueil = document.getElementById("vue-accueil");
@@ -524,6 +521,22 @@
     const boutonAffichage = document.getElementById("afficher-jeu");
     const texteBoutonAffichage =
       document.getElementById("texte-bouton-affichage");
+
+    const boutonIntro = document.getElementById("intro");
+    const texteIntro = document.getElementById("texte-intro");
+    const aideIntro = document.getElementById("aide-intro");
+    const iconeIntro = document.getElementById("icone-intro");
+
+    let introEnLecture = false;
+
+    function afficherEtatIntro(enLecture) {
+      introEnLecture = enLecture;
+      texteIntro.textContent = enLecture ? "Arrêter l’intro" : "Intro sonore";
+      aideIntro.textContent = enLecture
+        ? "Arrêter la musique sur l’écran public"
+        : "Lancer la musique sur l’écran public";
+      iconeIntro.textContent = enLecture ? "⏹️" : "🔊";
+    }
 
     function afficherVue(vue) {
       vueAccueil.classList.toggle("active", vue === "accueil");
@@ -538,7 +551,7 @@
       afficherVue("accueil");
     });
 
-    // Met à jour le texte du bouton selon l’écran actuellement affiché.
+    // Met à jour le bouton selon l’écran actuellement affiché.
     onValue(
       ref(db, "partie/affichage"),
       (snapshot) => {
@@ -576,6 +589,31 @@
           "Impossible de changer l’affichage. Vérifie la connexion et les règles Firebase.";
       } finally {
         boutonAffichage.disabled = false;
+      }
+    });
+
+    // Envoie l’ordre de lecture ou d’arrêt à index.html via Firebase.
+    boutonIntro.addEventListener("click", async () => {
+      boutonIntro.disabled = true;
+
+      const action = introEnLecture ? "arret" : "lecture";
+
+      try {
+        await set(ref(db, "partie/introCommande"), {
+          action,
+          date: Date.now()
+        });
+
+        afficherEtatIntro(action === "lecture");
+        statut.textContent = action === "lecture"
+          ? "Intro sonore lancée sur l’écran public 🔊"
+          : "Intro sonore arrêtée sur l’écran public.";
+      } catch (error) {
+        console.error("Erreur lors de l’envoi de la commande audio :", error);
+        statut.textContent =
+          "Impossible de commander la musique. Vérifie la connexion et les règles Firebase.";
+      } finally {
+        boutonIntro.disabled = false;
       }
     });
 
@@ -709,18 +747,6 @@
           "Impossible de modifier le statut du joueur. Vérifie les règles Firebase.";
       }
     }
-
-    document.getElementById("intro").addEventListener("click", async () => {
-      try {
-        sonIntro.currentTime = 0;
-        await sonIntro.play();
-        statut.textContent = "Intro sonore lancée 🔊";
-      } catch (error) {
-        console.error("Erreur lors de la lecture de l’intro :", error);
-        statut.textContent =
-          "Impossible de lire l’intro. Vérifie que intro.mp3 est dans le dossier du site.";
-      }
-    });
 
     // Création des équipes : les joueurs bloqués sont ignorés.
     document
