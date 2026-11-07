@@ -163,7 +163,6 @@
       font-size: 1.1rem;
     }
 
-    /* Vue de gestion des joueurs */
     .barre-gestion {
       flex: 0 0 auto;
       display: flex;
@@ -382,7 +381,6 @@
 
 <body>
   <main>
-    <!-- Accueil de la régie -->
     <section id="vue-accueil" class="vue active">
       <header class="entete">
         <p>Régie animateur</p>
@@ -403,8 +401,8 @@
         <button class="bouton" id="afficher-jeu" type="button">
           <span class="icone">📺</span>
           <span class="texte-bouton">
-            <strong>Afficher l’écran du jeu</strong>
-            <small>Afficher le QR code et les joueurs</small>
+            <strong id="texte-bouton-affichage">Afficher l’écran du jeu</strong>
+            <small>Basculer entre l’accueil et l’écran du jeu</small>
           </span>
         </button>
 
@@ -473,7 +471,6 @@
       </section>
     </section>
 
-    <!-- Gestion des joueurs -->
     <section id="vue-joueurs" class="vue" aria-live="polite">
       <div class="barre-gestion">
         <button class="bouton-retour" id="retour" type="button">
@@ -491,7 +488,6 @@
 
     <p class="statut" id="statut">En attente de tes commandes…</p>
 
-    <!-- Place intro.mp3 dans le même dossier que ce fichier HTML -->
     <audio id="sonIntro" src="intro.mp3"></audio>
   </main>
 
@@ -525,6 +521,9 @@
     const compteurJoueurs = document.getElementById("compteur-joueurs");
     const vueAccueil = document.getElementById("vue-accueil");
     const vueJoueurs = document.getElementById("vue-joueurs");
+    const boutonAffichage = document.getElementById("afficher-jeu");
+    const texteBoutonAffichage =
+      document.getElementById("texte-bouton-affichage");
 
     function afficherVue(vue) {
       vueAccueil.classList.toggle("active", vue === "accueil");
@@ -539,25 +538,48 @@
       afficherVue("accueil");
     });
 
-    // Envoie une commande à index.html via Firebase.
-    document.getElementById("afficher-jeu").addEventListener("click", async (event) => {
-      const bouton = event.currentTarget;
-      bouton.disabled = true;
-      statut.textContent = "Affichage de l’écran du jeu…";
+    // Met à jour le texte du bouton selon l’écran actuellement affiché.
+    onValue(
+      ref(db, "partie/affichage"),
+      (snapshot) => {
+        const jeuAffiche = snapshot.val() === "jeu";
+
+        texteBoutonAffichage.textContent = jeuAffiche
+          ? "Revenir à l’accueil"
+          : "Afficher l’écran du jeu";
+      },
+      (error) => {
+        console.error("Erreur de lecture de l’affichage :", error);
+        statut.textContent =
+          "Impossible de lire l’état de l’écran dans Firebase.";
+      }
+    );
+
+    // Alterne entre l’écran du jeu et l’écran d’accueil.
+    boutonAffichage.addEventListener("click", async () => {
+      boutonAffichage.disabled = true;
 
       try {
-        await set(ref(db, "partie/affichage"), "jeu");
-        statut.textContent = "L’écran du jeu est affiché.";
+        const affichageRef = ref(db, "partie/affichage");
+        const snapshot = await get(affichageRef);
+        const nouvelAffichage =
+          snapshot.val() === "jeu" ? "accueil" : "jeu";
+
+        await set(affichageRef, nouvelAffichage);
+
+        statut.textContent = nouvelAffichage === "jeu"
+          ? "L’écran du jeu est affiché."
+          : "Retour à l’écran d’accueil.";
       } catch (error) {
-        console.error("Erreur lors de l’affichage du jeu :", error);
+        console.error("Erreur lors du changement d’affichage :", error);
         statut.textContent =
-          "Impossible d’afficher le jeu. Vérifie la connexion et les règles Firebase.";
+          "Impossible de changer l’affichage. Vérifie la connexion et les règles Firebase.";
       } finally {
-        bouton.disabled = false;
+        boutonAffichage.disabled = false;
       }
     });
 
-    // Affichage en temps réel des joueurs
+    // Affichage en temps réel des joueurs.
     onValue(
       ref(db, "joueurs"),
       (snapshot) => {
@@ -700,7 +722,7 @@
       }
     });
 
-    // Création des équipes : les joueurs bloqués sont ignorés
+    // Création des équipes : les joueurs bloqués sont ignorés.
     document
       .getElementById("creation-equipes")
       .addEventListener("click", async (event) => {
@@ -725,13 +747,13 @@
             return;
           }
 
-          // Mélange aléatoire des joueurs
+          // Mélange aléatoire des joueurs.
           for (let i = joueurs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [joueurs[i], joueurs[j]] = [joueurs[j], joueurs[i]];
           }
 
-          // Crée assez d’équipes pour ne pas dépasser 4 joueurs par équipe
+          // Crée assez d’équipes pour ne pas dépasser 4 joueurs par équipe.
           const nombreEquipes = Math.ceil(joueurs.length / 4);
           const equipes = {};
 
@@ -763,7 +785,7 @@
         }
       });
 
-    // Supprime toutes les équipes
+    // Supprime toutes les équipes.
     document
       .getElementById("supprimer-equipes")
       .addEventListener("click", async (event) => {
@@ -786,7 +808,7 @@
         }
       });
 
-    // Les boutons envoient jeu_1_lance, jeu_2_lance, etc. dans Firebase
+    // Les boutons envoient jeu_1_lance, jeu_2_lance, etc. dans Firebase.
     for (let numero = 1; numero <= 5; numero++) {
       document
         .getElementById(`jeu-${numero}`)
