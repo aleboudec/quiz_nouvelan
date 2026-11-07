@@ -541,6 +541,12 @@
       afficherVue("accueil");
     });
 
+    document
+    .getElementById("ouvrir-accueil")
+    .addEventListener("click", () => {
+      window.open("accueil.html", "ecran-public");
+      statut.textContent = "La page d’accueil a été ouverte.";
+    });
     // Affichage en temps réel des joueurs
     onValue(
       ref(db, "joueurs"),
