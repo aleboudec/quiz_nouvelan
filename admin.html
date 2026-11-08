@@ -285,6 +285,19 @@
       text-align: center;
     }
 
+    .vue#vue-accueil { overflow-y: auto; }
+    .panneau-partie { flex: 0 0 auto; margin-top: 14px; padding: 14px 18px; border: 1px solid rgba(255,255,255,.18); border-radius: 16px; background: rgba(255,255,255,.07); }
+    .panneau-partie h2 { margin: 0 0 8px; color: #ffcf4a; font-size: 1.2rem; }
+    .panneau-partie p { margin: 6px 0; color: #e7e7f4; }
+    .panneau-partie ol { margin: 8px 0; padding-left: 25px; }
+    .panneau-partie li { padding: 3px; }
+    .bonne-reponse-admin { color: #8ce6ad; font-weight: 700; }
+    .texte-question-admin { font-size: 1.15rem; font-weight: 600; }
+    .bouton-action { margin: 8px 6px 0 0; padding: 9px 13px; border: 0; border-radius: 10px; background: #ffcf4a; color: #171735; font: inherit; font-weight: 600; cursor: pointer; }
+    .bouton-action:disabled { opacity: .55; cursor: default; }
+    .actions-jeu-admin { display: flex; flex-wrap: wrap; gap: 4px; }
+    .classement-jeu-admin { font-size: 1.1rem; }
+
     @media (max-width: 850px) {
       .commandes {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -469,6 +482,10 @@
           </button>
         </div>
       </section>
+      <section id="panneau-partie" class="panneau-partie" aria-live="polite">
+        <h2>Partie en cours</h2>
+        <p>Choisis un jeu pour afficher ici les commandes de la partie.</p>
+      </section>
     </section>
 
     <section id="vue-joueurs" class="vue" aria-live="polite">
@@ -490,6 +507,7 @@
   </main>
 
   <script type="module">
+    import { QUESTIONS, REGLES, POINTS_BONNE_REPONSE } from "./questions.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
     import {
       getDatabase,
@@ -798,7 +816,10 @@
             };
           });
 
-          await set(ref(db, "partie/equipes"), equipes);
+          await update(ref(db), {
+            "partie/equipes": equipes,
+            "partie/jeu": null
+          });
 
           statut.textContent =
             `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""} réparti${joueurs.length > 1 ? "s" : ""} dans ${nombreEquipes} équipe${nombreEquipes > 1 ? "s" : ""} 🎉`;
@@ -834,32 +855,173 @@
         }
       });
 
-    // Les boutons envoient jeu_1_lance, jeu_2_lance, etc. dans Firebase.
-    for (let numero = 1; numero <= 5; numero++) {
-      document
-        .getElementById(`jeu-${numero}`)
-        .addEventListener("click", async (event) => {
-          const bouton = event.currentTarget;
-          bouton.disabled = true;
-          statut.textContent = `Lancement du jeu ${numero}…`;
+    const panneauPartie = document.getElementById("panneau-partie");
+    const listeEquipesJeu = () => equipesCourantes();
+    let etatJeu = null;
+    const pointsDejaAttribues = new Set();
 
-          try {
-            await set(ref(db, "partie/etat"), `jeu_${numero}_lance`);
-            statut.textContent = `Le jeu ${numero} est lancé !`;
-          } catch (error) {
-            console.error(`Erreur lors du lancement du jeu ${numero} :`, error);
-            statut.textContent =
-              `Impossible de lancer le jeu ${numero}. Vérifie la connexion à Firebase.`;
-          } finally {
-            bouton.disabled = false;
-          }
+    function equipesCourantes() {
+      return Object.entries(equipesPourAffichage || {}).sort(([a], [b]) =>
+        Number(a.match(/\d+/)?.[0] || 0) - Number(b.match(/\d+/)?.[0] || 0)
+      ).slice(0, 4);
+    }
+    let equipesPourAffichage = {};
+
+    onValue(ref(db, "partie/equipes"), snapshot => {
+      equipesPourAffichage = snapshot.val() || {};
+      afficherPanneauPartie(etatJeu);
+    });
+    onValue(ref(db, "partie/jeu"), snapshot => {
+      etatJeu = snapshot.val();
+      afficherPanneauPartie(etatJeu);
+    }, error => {
+      console.error("Erreur de lecture du jeu :", error);
+      panneauPartie.textContent = "Impossible de lire l’état du jeu dans Firebase.";
+    });
+
+    function nomEquipe(index) {
+      const [cle, equipe] = listeEquipesJeu()[index] || [`equipe${index + 1}`, null];
+      return equipe?.nom || `Équipe ${index + 1}`;
+    }
+    function ajouterBouton(parent, texte, action, classe = "") {
+      const bouton = document.createElement("button");
+      bouton.type = "button";
+      bouton.className = `bouton-action ${classe}`;
+      bouton.textContent = texte;
+      bouton.addEventListener("click", action);
+      parent.appendChild(bouton);
+      return bouton;
+    }
+    function trierScores(scores) {
+      return [0, 1, 2, 3].map(i => ({ nom: nomEquipe(i), score: Number(scores?.[`equipe${i + 1}`]) || 0 }))
+        .sort((a, b) => b.score - a.score);
+    }
+    async function changerJeu(changements) {
+      if (!etatJeu) return;
+      await update(ref(db, "partie/jeu"), changements);
+    }
+    function afficherPanneauPartie(jeu) {
+      panneauPartie.replaceChildren();
+      if (!jeu) {
+        const texte = document.createElement("p");
+        texte.textContent = "Choisis un jeu pour afficher ici les commandes de la partie.";
+        panneauPartie.appendChild(texte);
+        return;
+      }
+      const titre = document.createElement("h2");
+      titre.textContent = `Jeu ${jeu.numero} — ${({regles:"Règles", question:"Question", reponses:"Réponses", equipe_suivante:"Équipe suivante", scores:"Classement"})[jeu.phase] || "Partie"}`;
+      panneauPartie.appendChild(titre);
+      const index = Math.max(0, Math.min(4, Number(jeu.questionIndex) || 0));
+      const indexEquipe = Math.max(0, Math.min(3, Number(jeu.equipeIndex) || 0));
+      const question = QUESTIONS[(Number(jeu.numero) || 1) - 1]?.[index];
+      if (jeu.phase === "regles") {
+        const regle = REGLES[(Number(jeu.numero) || 1) - 1];
+        const texte = document.createElement("p");
+        texte.textContent = `${regle.icone} ${regle.titre} — ${regle.texte} Exemple : ${regle.exemple}. Une bonne réponse rapporte ${POINTS_BONNE_REPONSE} points.`;
+        panneauPartie.appendChild(texte);
+        const ordre = document.createElement("p");
+        ordre.textContent = `Ordre de passage : ${[0,1,2,3].map(i => `${i+1}. ${nomEquipe(i)}`).join(" · ")}`;
+        panneauPartie.appendChild(ordre);
+        ajouterBouton(panneauPartie, "Démarrer le jeu", () => changerJeu({ phase: "question" }));
+      } else if (jeu.phase === "question") {
+        const texte = document.createElement("p");
+        texte.className = "texte-question-admin";
+        texte.textContent = question?.texte || "Question indisponible.";
+        panneauPartie.appendChild(texte);
+        ajouterBouton(panneauPartie, "Afficher les réponses", () => changerJeu({ phase: "reponses" }));
+      } else if (jeu.phase === "reponses") {
+        const texte = document.createElement("p");
+        texte.textContent = `${nomEquipe(indexEquipe)} — ${question?.texte || "Question indisponible."}`;
+        panneauPartie.appendChild(texte);
+        const reponses = document.createElement("ol");
+        (question?.reponses || []).forEach((reponse, i) => {
+          const li = document.createElement("li");
+          li.textContent = `${String.fromCharCode(65+i)}. ${reponse}${i === question.bonne ? " ✓" : ""}`;
+          if (i === question.bonne) li.className = "bonne-reponse-admin";
+          reponses.appendChild(li);
         });
+        panneauPartie.appendChild(reponses);
+        const actions = document.createElement("div");
+        actions.className = "actions-jeu-admin";
+        [0,1,2,3].forEach(i => {
+          const cle = `q${index}-e${i+1}`;
+          const bouton = ajouterBouton(actions, `+${POINTS_BONNE_REPONSE} pts · ${nomEquipe(i)}`, async () => {
+            if (pointsDejaAttribues.has(cle)) return;
+            bouton.disabled = true;
+            try {
+              const scoreRef = ref(db, `partie/jeu/scores/equipe${i+1}`);
+              const scoreSnapshot = await get(scoreRef);
+              await set(scoreRef, (Number(scoreSnapshot.val()) || 0) + POINTS_BONNE_REPONSE);
+              pointsDejaAttribues.add(cle);
+              statut.textContent = `${POINTS_BONNE_REPONSE} points attribués à ${nomEquipe(i)}.`;
+            } catch (error) {
+              console.error("Erreur d’attribution des points :", error);
+              statut.textContent = "Impossible d’attribuer les points.";
+              bouton.disabled = false;
+            }
+          });
+          bouton.disabled = pointsDejaAttribues.has(cle);
+        });
+        panneauPartie.appendChild(actions);
+        const prochaine = index < 4 ? "Question suivante" : "Équipe suivante";
+        ajouterBouton(panneauPartie, prochaine, () => changerJeu(index < 4
+          ? { questionIndex: index + 1, phase: "question" }
+          : { phase: "equipe_suivante" }));
+      } else if (jeu.phase === "equipe_suivante") {
+        if (indexEquipe < 3) {
+          const texte = document.createElement("p");
+          texte.textContent = `À ${nomEquipe(indexEquipe + 1)} de jouer !`;
+          panneauPartie.appendChild(texte);
+          ajouterBouton(panneauPartie, "Question suivante", () => changerJeu({ equipeIndex: indexEquipe + 1, questionIndex: 0, phase: "question" }));
+        } else {
+          const texte = document.createElement("p");
+          texte.textContent = "Toutes les équipes ont terminé.";
+          panneauPartie.appendChild(texte);
+          ajouterBouton(panneauPartie, "Afficher les scores", () => changerJeu({ phase: "scores" }));
+        }
+      } else if (jeu.phase === "scores") {
+        const classement = document.createElement("ol");
+        classement.className = "classement-jeu-admin";
+        trierScores(jeu.scores).forEach((equipe, i) => {
+          const ligne = document.createElement("li");
+          ligne.textContent = `${i + 1}. ${equipe.nom} — ${equipe.score} pts`;
+          classement.appendChild(ligne);
+        });
+        panneauPartie.appendChild(classement);
+      }
     }
 
-    document.getElementById("classement").addEventListener("click", () => {
-      statut.textContent =
-        "Le classement sera affiché ici quand les scores seront disponibles.";
+    for (let numero = 1; numero <= 5; numero++) {
+      document.getElementById(`jeu-${numero}`).addEventListener("click", async event => {
+        const bouton = event.currentTarget;
+        bouton.disabled = true;
+        const scores = { equipe1: 0, equipe2: 0, equipe3: 0, equipe4: 0 };
+        try {
+          await set(ref(db, "partie/jeu"), { numero, phase: "regles", questionIndex: 0, equipeIndex: 0, scores });
+          pointsDejaAttribues.clear();
+          statut.textContent = `Jeu ${numero} prêt.`;
+        } catch (error) {
+          console.error("Erreur lors du lancement du jeu :", error);
+          statut.textContent = "Impossible de lancer le jeu. Vérifie la connexion Firebase.";
+        } finally {
+          bouton.disabled = false;
+        }
+      });
+    }
+
+    document.getElementById("classement").addEventListener("click", async () => {
+      try {
+        const snapshot = await get(ref(db, "partie/jeu"));
+        const jeu = snapshot.val() || { numero: 1, questionIndex: 0, equipeIndex: 0, scores: { equipe1:0, equipe2:0, equipe3:0, equipe4:0 } };
+        if (!jeu.scores) jeu.scores = { equipe1:0, equipe2:0, equipe3:0, equipe4:0 };
+        await set(ref(db, "partie/jeu"), { ...jeu, phase: "scores" });
+        statut.textContent = "Classement affiché.";
+      } catch (error) {
+        console.error("Erreur d’affichage du classement :", error);
+        statut.textContent = "Impossible d’afficher le classement.";
+      }
     });
   </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
