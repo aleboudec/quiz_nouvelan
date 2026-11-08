@@ -92,14 +92,10 @@
       cursor: wait;
     }
 
-    #message { min-height: 1.5em; margin: 18px 0 0; }
-    #zone-jeu { display: none; margin-top: 20px; padding: 16px; border: 1px solid rgba(255,255,255,.2); border-radius: 18px; background: rgba(23,23,53,.55); text-align: left; }
-    #zone-jeu.visible { display: block; }
-    #zone-jeu h2 { margin: 0 0 10px; color: #ffcf4a; }
-    #zone-jeu ol { padding-left: 24px; }
-    #zone-jeu li { margin: 7px 0; padding: 8px; border-radius: 8px; background: rgba(255,255,255,.1); }
-    .message-jeu { font-size: 1.15rem; font-weight: 600; }
-
+    #message {
+      min-height: 1.5em;
+      margin: 18px 0 0;
+    }
 
     .retour {
       display: inline-block;
@@ -134,16 +130,10 @@
       <p id="message" aria-live="polite"></p>
     </form>
 
-    <section id="zone-jeu" aria-live="polite">
-      <h2 id="titre-zone-jeu">🎮 Partie</h2>
-      <div id="contenu-zone-jeu"></div>
-    </section>
-
     <a class="retour" href="index.html">← Retour à l’accueil</a>
   </main>
 
   <script type="module">
-    import { QUESTIONS, REGLES } from "./questions.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
     import {
       getDatabase,
@@ -266,38 +256,13 @@
 
     function ecouterLancement() {
       if (arretEcouteLancement) arretEcouteLancement();
-      arretEcouteLancement = onValue(ref(db, "partie/jeu"), snapshot => {
-        const jeu = snapshot.val();
-        const zone = document.getElementById("zone-jeu");
-        const contenu = document.getElementById("contenu-zone-jeu");
-        const titre = document.getElementById("titre-zone-jeu");
-        contenu.replaceChildren();
-        if (!jeu) { zone.classList.remove("visible"); return; }
-        zone.classList.add("visible");
-        const numero = Math.max(1, Math.min(5, Number(jeu.numero)||1));
-        const index = Math.max(0, Math.min(4, Number(jeu.questionIndex)||0));
-        const regle = REGLES[numero-1];
-        const question = QUESTIONS[numero-1]?.[index];
-        titre.textContent = `${regle.icone} Jeu ${numero} — ${regle.titre}`;
-        const ajouter = (tag, texte, classe="") => { const e=document.createElement(tag); e.textContent=texte; if(classe)e.className=classe; contenu.appendChild(e); return e; };
-        if (jeu.phase === "regles") {
-          ajouter("p", regle.texte, "message-jeu");
-          ajouter("p", `Exemple : ${regle.exemple}`);
-        } else if (jeu.phase === "question") {
-          ajouter("p", question?.texte || "La question sera bientôt disponible.", "message-jeu");
-        } else if (jeu.phase === "reponses") {
-          ajouter("p", question?.texte || "Question indisponible.", "message-jeu");
-          const liste=document.createElement("ol");
-          (question?.reponses||[]).forEach(r=>{const li=document.createElement("li");li.textContent=r;liste.appendChild(li);});
-          contenu.appendChild(liste);
-        } else if (jeu.phase === "equipe_suivante") {
-          ajouter("p", "Merci de patienter, l’équipe suivante va jouer !", "message-jeu");
-        } else if (jeu.phase === "scores") {
-          ajouter("p", "Le classement des scores est affiché sur l’écran principal. Regarde devant toi !", "message-jeu");
+
+      arretEcouteLancement = onValue(ref(db, "partie/etat"), (snapshot) => {
+        if (snapshot.val() === "jeu_lance") {
+          window.location.href = "question.html";
         }
-      }, error => { console.error("Erreur de lecture du jeu :", error); message.textContent = "Impossible de suivre la partie en direct."; });
+      });
     }
   </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
