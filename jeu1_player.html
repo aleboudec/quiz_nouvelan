@@ -178,7 +178,15 @@
 
     function afficherQuestion(q, reponseAffichee) {
       const lettres = ["A", "B", "C", "D"];
-      let html = `<div class="question-principale">${q.question}</div><div id="zone-reponses">`;
+
+      // Consigne affichée à la place de la question (si elle n'existe pas).
+      const consigne = Math.random() < 0.5
+        ? "🔍 Trouve le mytho !"
+        : "💡 Trouve la vérité !";
+
+      const texteQuestion = q.question || q.texte || consigne;
+
+      let html = `<div class="question-principale">${texteQuestion}</div><div id="zone-reponses">`;
 
       q.affirmations.forEach((affirmation, index) => {
         let classe = "case-reponse";
@@ -206,34 +214,4 @@
 
     function message(reponseAffichee) {
       if (reponseAffichee) return "La réponse est révélée sur l'écran ! 📺";
-      if (choixFait != null) return "✅ Réponse envoyée ! En attente de la révélation…";
-      return "Touche la mytho selon toi ! 👆";
-    }
-
-    async function voter(index) {
-      if (choixFait != null) return;
-      choixFait = index;
-
-      const q = QUESTIONS[questionCourante];
-      afficherQuestion(q, false);
-
-      if (!cleEquipe || !joueurId) {
-        document.getElementById("resultat").textContent =
-          "Impossible de voter : équipe inconnue. Reconnecte-toi depuis jeu.html.";
-        return;
-      }
-
-      try {
-        await set(ref(db, `partie/jeu1/votes/${cleEquipe}/${joueurId}`), {
-          choix: index,
-          question: questionCourante
-        });
-      } catch (error) {
-        console.error("Erreur d'envoi du vote :", error);
-        document.getElementById("resultat").textContent = "Erreur d'envoi. Réessaie !";
-        choixFait = null;
-      }
-    }
-  </script>
-</body>
-</html>
+      if (choixFait != null) return "
