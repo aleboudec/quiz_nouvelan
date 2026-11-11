@@ -174,7 +174,43 @@
       }
 
       afficherQuestion(q, donnees.reponseAffichee);
+
+      // ⭐ Révélation : on vérifie le vote et on attribue les points.
+      if (donnees.reponseAffichee) {
+        await attribuerPoints(q, donnees.questionIndex);
+      }
     });
+
+    // ====== ATTRIBUTION DES POINTS (+3 si bonne réponse) ======
+    async function attribuerPoints(q, indexQuestion) {
+      if (!cleEquipe || !joueurId || choixFait == null) return;
+
+      // Garde-fou : on ne compte les points qu'UNE SEULE fois par joueur et par question.
+      try {
+        const snapDejaCompte = await get(
+          ref(db, `partie/jeu1/pointsComptes/${joueurId}`)
+        );
+        const dejaCompte = snapDejaCompte.val();
+        if (dejaCompte === indexQuestion) return; // Points déjà attribués → on ne refait rien.
+
+        if (choixFait === q.mytho) {
+          // Bonne réponse : +3 points pour l'équipe.
+          const snapScore = await get(ref(db, `partie/scores/${cleEquipe}/score`));
+          const scoreActuel = snapScore.val() || 0;
+          await set(ref(db, `partie/scores/${cleEquipe}/score`), scoreActuel + 3);
+          document.getElementById("resultat").textContent =
+            "🎉 Bravo ! +3 points pour ton équipe !";
+        } else {
+          document.getElementById("resultat").textContent =
+            "😵 Raté… peut-être la prochaine fois !";
+        }
+
+        // On marque que les points de CE joueur pour CETTE question sont comptés.
+        await set(ref(db, `partie/jeu1/pointsComptes/${joueurId}`), indexQuestion);
+      } catch (error) {
+        console.error("Erreur d'attribution des points :", error);
+      }
+    }
 
     function afficherQuestion(q, reponseAffichee) {
       const lettres = ["A", "B", "C", "D"];
@@ -214,4 +250,34 @@
 
     function message(reponseAffichee) {
       if (reponseAffichee) return "La réponse est révélée sur l'écran ! 📺";
-      if (choixFait != null) return "
+      if (choixFait != null) return "✅ Réponse envoyée ! En attente de la révélation…";
+      return "Touche la mytho selon toi ! 👆";
+    }
+
+    async function voter(index) {
+      if (choixFait != null) return;
+      choixFait = index;
+
+      const q = QUESTIONS[questionCourante];
+      afficherQuestion(q, false);
+
+      if (!cleEquipe || !joueurId) {
+        document.getElementById("resultat").textContent =
+          "Impossible de voter : équipe inconnue. Reconnecte-toi depuis jeu.html.";
+        return;
+      }
+
+      try {
+        await set(ref(db, `partie/jeu1/votes/${cleEquipe}/${joueurId}`), {
+          choix: index,
+          question: questionCourante
+        });
+      } catch (error) {
+        console.error("Erreur d'envoi du vote :", error);
+        document.getElementById("resultat").textContent = "Erreur d'envoi. Réessaie !";
+        choixFait = null;
+      }
+    }
+  </script>
+</body>
+</html>
