@@ -15,50 +15,31 @@
     body {
       margin: 0;
       min-height: 100vh;
-      padding: 5vw;
+      padding: 4vw;
       color: white;
       font-family: "Fredoka", Arial, sans-serif;
       background: linear-gradient(135deg, #171735 0%, #2a2a5e 100%);
-    }
-
-    .titre-jeu1 {
-      margin: 0 0 8px;
-      font-size: clamp(2rem, 6vw, 4.5rem);
-      text-shadow: 4px 5px 0 #09091d;
-    }
-
-    .titre-jeu1 span { color: #ffcf4a; }
-
-    .sous-titre {
-      margin: 0 0 40px;
-      color: #d0d0e5;
-      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
-    }
-
-    .regles {
-      margin: 0 0 40px;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 10px;
-      color: #d0d0e5;
-      font-size: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     /* ====== ZONE D'AFFICHAGE DES QUESTIONS ====== */
     #zone-question {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 18px;
-      max-width: 1100px;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .question-principale {
-      padding: 30px 34px;
+      padding: 34px 38px;
       border: 3px solid #ffcf4a;
       border-radius: 22px;
       background: rgba(20, 21, 57, 0.9);
-      font-size: clamp(1.4rem, 3vw, 2.3rem);
+      font-size: clamp(1.6rem, 3.5vw, 2.8rem);
       line-height: 1.4;
       text-align: center;
       text-shadow: 2px 2px 0 #09091d;
@@ -68,15 +49,15 @@
     .grille-reponses {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      gap: 20px;
     }
 
     .case-reponse {
-      padding: 26px 30px;
+      padding: 30px 34px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 18px;
       background: rgba(37, 37, 77, 0.9);
-      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      font-size: clamp(1.2rem, 2.5vw, 1.9rem);
       line-height: 1.4;
       text-shadow: 1px 1px 0 #09091d;
     }
@@ -93,36 +74,27 @@
     }
 
     .revelation {
-      padding: 24px 30px;
+      padding: 26px 32px;
       border-radius: 18px;
       background: rgba(255, 107, 107, 0.15);
       border: 2px dashed #ff6b6b;
-      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
       line-height: 1.5;
       text-align: center;
     }
 
-    .revelation small { color: #ffcf4a; display: block; margin-top: 8px; }
+    .revelation small { color: #ffcf4a; display: block; margin-top: 10px; }
 
     .attente {
       padding: 30px;
       text-align: center;
       color: #d0d0e5;
-      font-size: 1.4rem;
+      font-size: 1.6rem;
     }
   </style>
 </head>
 
 <body>
-  <h1 class="titre-jeu1">Premier jeu : Le <span>Mytho-mètre</span> 🎭</h1>
-  <p class="sous-titre">Saurez-vous démêler le vrai du faux ?</p>
-
-  <ul class="regles">
-    <li>✅ 4 affirmations : 3 vraies et 1 fausse… ou 3 fausses et 1 vraie !</li>
-    <li>🎯 Chaque équipe doit démasquer la mytho sur son téléphone.</li>
-    <li>🏆 <strong>3 points</strong> par bonne réponse.</li>
-  </ul>
-
   <div id="zone-question">
     <p class="attente">En attente de la première question… ⏳</p>
   </div>
@@ -172,7 +144,7 @@
 
       const lettres = ["A", "B", "C", "D"];
 
-      let html = `<div class="question-principale">${q.question}</div>`;
+      let html = `<div class="question-principale">${q.question || q.texte}</div>`;
       html += `<div class="grille-reponses">`;
 
       q.affirmations.forEach((affirmation, index) => {
