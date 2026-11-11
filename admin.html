@@ -726,8 +726,39 @@
       });
     }
 
-    document.getElementById("classement").addEventListener("click", () => {
-      statut.textContent = "Le classement sera affiché ici quand les scores seront disponibles.";
+        // ====== CLASSEMENT : afficher/masquer score.html sur l'écran public ======
+    const boutonClassement = document.getElementById("classement");
+    const texteClassement = boutonClassement.querySelector("strong");
+    const aideClassement = boutonClassement.querySelector("small");
+
+    // Met à jour le bouton selon ce qui est affiché à l'écran.
+    onValue(ref(db, "partie/affichage"), (snapshot) => {
+      const classementAffiche = snapshot.val() === "scores";
+      texteClassement.textContent = classementAffiche
+        ? "Masquer le classement"
+        : "Afficher le classement";
+      aideClassement.textContent = classementAffiche
+        ? "Cacher les scores de l’écran public"
+        : "Montrer les scores sur l’écran public";
+    });
+
+    // Bascule l'écran public entre le classement et le jeu/accueil.
+    boutonClassement.addEventListener("click", async () => {
+      boutonClassement.disabled = true;
+      try {
+        const affichageRef = ref(db, "partie/affichage");
+        const snapshot = await get(affichageRef);
+        const nouvelAffichage = snapshot.val() === "scores" ? "jeu" : "scores";
+        await set(affichageRef, nouvelAffichage);
+        statut.textContent = nouvelAffichage === "scores"
+          ? "Le classement est affiché sur l’écran public 🏆"
+          : "Retour à l’écran du jeu.";
+      } catch (error) {
+        console.error("Erreur lors de l’affichage du classement :", error);
+        statut.textContent = "Impossible d’afficher le classement. Vérifie la connexion et les règles Firebase.";
+      } finally {
+        boutonClassement.disabled = false;
+      }
     });
   </script>
 </body>
