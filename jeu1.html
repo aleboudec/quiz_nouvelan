@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quiz d’Alan</title>
+  <title>Quiz d'Alan</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
       pointer-events: none;
     }
 
-    /* Écran d’accueil visible au départ */
+    /* Écran d'accueil visible au départ */
     #ecran-bienvenue {
       position: fixed;
       inset: 0;
@@ -62,13 +62,7 @@
       color: #ffcf4a;
     }
 
-    #ecran-bienvenue p {
-      margin: 20px 0 0;
-      color: #ffcf4a;
-      font-size: clamp(1.2rem, 3vw, 2rem);
-    }
-
-    /* L’écran du jeu est caché tant que la régie ne l’a pas demandé */
+    /* L'écran du jeu est caché tant que la régie ne l'a pas demandé */
     .contenu {
       display: none;
       position: relative;
@@ -308,116 +302,6 @@
       }
     }
 
-    /* Mode plein écran : les équipes restent visibles */
-    body.equipes-creees {
-      display: block;
-      width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      min-height: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    body.equipes-creees::before {
-      background: rgba(12, 13, 40, 0.82);
-    }
-
-    body.equipes-creees .contenu {
-      display: block;
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      margin: 0;
-    }
-
-    body.equipes-creees .intro,
-    body.equipes-creees .carte-joueurs {
-      display: none;
-    }
-
-    body.equipes-creees .panneaux {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    body.equipes-creees #section-equipes.visible {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      display: block;
-      width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      min-height: 0;
-      padding: 16px;
-      overflow: hidden;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-      backdrop-filter: none;
-    }
-
-    body.equipes-creees #section-equipes > h2,
-    body.equipes-creees #compteur-equipes {
-      position: absolute;
-      left: 50%;
-      width: max-content;
-      max-width: 90vw;
-      transform: translateX(-50%);
-      text-align: center;
-      text-shadow: 0 3px 10px #09091d;
-    }
-
-    body.equipes-creees #section-equipes > h2 {
-      top: 10px;
-      margin: 0;
-      font-size: clamp(1.3rem, 4vh, 2.5rem);
-    }
-
-    body.equipes-creees #compteur-equipes {
-      top: 55px;
-      margin: 0;
-      font-size: clamp(0.8rem, 2vh, 1rem);
-    }
-
-    body.equipes-creees #liste-equipes {
-      position: absolute;
-      inset: 90px 16px 16px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    body.equipes-creees .carte-equipe {
-      min-height: 0;
-      padding: clamp(6px, 1.5vh, 16px);
-      overflow: hidden;
-    }
-
-    body.equipes-creees .carte-equipe h3 {
-      margin-bottom: clamp(4px, 0.8vh, 12px);
-      font-size: clamp(0.85rem, 2.5vh, 1.3rem);
-    }
-
-    body.equipes-creees .totem {
-      margin-bottom: 2px;
-      font-size: clamp(1.4rem, 5vh, 2.7rem);
-    }
-
-    body.equipes-creees .joueurs-equipe {
-      gap: clamp(3px, 0.6vh, 7px);
-    }
-
-    body.equipes-creees .joueur-equipe {
-      padding: clamp(3px, 0.7vh, 8px);
-      font-size: clamp(0.65rem, 1.8vh, 1rem);
-    }
-
     /* Quand le jeu 1 est affiché, on masque tout le reste */
     body.jeu1-actif #ecran-bienvenue,
     body.jeu1-actif .contenu,
@@ -460,24 +344,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      body.equipes-creees #section-equipes.visible {
-        padding: 8px;
-      }
-
-      body.equipes-creees #section-equipes > h2 {
-        top: 8px;
-        font-size: clamp(1.1rem, 4vw, 1.5rem);
-      }
-
-      body.equipes-creees #compteur-equipes {
-        top: 42px;
-      }
-
-      body.equipes-creees #liste-equipes {
-        inset: 72px 8px 8px;
-        gap: 8px;
-      }
-
       body.equipes-creees .carte-equipe {
         padding: 6px;
         border-radius: 12px;
@@ -513,17 +379,17 @@
   <section id="ecran-bienvenue">
     <div>
       <h1>
-        Alan t’en pose,<br>
+        Alan t'en pose,<br>
         <span>des questions&nbsp;!</span>
       </h1>
     </div>
   </section>
 
-  <!-- Écran du jeu, affiché quand la régie l’active -->
+  <!-- Écran du jeu, affiché quand la régie l'active -->
   <main class="contenu">
     <section class="intro">
       <h1>
-        Alan t’en pose,<br>
+        Alan t'en pose,<br>
         <span>des questions&nbsp;!</span>
       </h1>
 
@@ -572,7 +438,7 @@
     <div id="affirmations-publiques"></div>
   </section>
 
-  <!-- Le fichier intro.wav doit être dans le même dossier que index.html -->
+  <!-- Le fichier intro.wav doit être dans le même dossier que jeu1.html -->
   <audio id="sonIntroPublic" src="intro.wav" preload="auto"></audio>
 
   <button id="activer-son" type="button">🔊 Activer le son</button>
@@ -603,7 +469,7 @@
     const sonIntroPublic = document.getElementById("sonIntroPublic");
     const boutonActiverSon = document.getElementById("activer-son");
 
-    // Clique une fois sur l’écran public pour autoriser le son.
+    // Clique une fois sur l'écran public pour autoriser le son.
     boutonActiverSon.addEventListener("click", async () => {
       try {
         sonIntroPublic.muted = true;
@@ -615,15 +481,10 @@
         boutonActiverSon.textContent = "✅ Son activé";
         boutonActiverSon.disabled = true;
       } catch (error) {
-        console.error("Impossible d’activer le son :", error);
+        console.error("Impossible d'activer le son :", error);
         sonIntroPublic.muted = false;
         boutonActiverSon.textContent = "⚠️ Vérifie intro.wav";
       }
-    });
-
-    // La régie commande l’écran en modifiant partie/affichage dans Firebase.
-    onValue(ref(db, "partie/affichage"), (snapshot) => {
-      document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
     });
 
     // La régie commande la musique via partie/introCommande.
@@ -638,7 +499,7 @@
             await sonIntroPublic.play();
           } catch (error) {
             console.error(
-              "Impossible de lancer le son sur l’écran public :",
+              "Impossible de lancer le son sur l'écran public :",
               error
             );
           }
@@ -650,143 +511,24 @@
         }
       },
       (error) => {
-        console.error("Erreur d’écoute de la commande audio :", error);
+        console.error("Erreur d'écoute de la commande audio :", error);
       }
     );
 
-    // Le QR code et le lien pointent vers jeu.html, dans le même dossier.
-    const urlJeu = new URL("jeu.html", window.location.href).href;
+    // ====== ÉTAT DE LA PARTIE ======
+    // Si la régie quitte le jeu (état différent de jeu_1_lance),
+    // on retourne automatiquement à index.html.
+    onValue(ref(db, "partie/etat"), (snapshot) => {
+      const etat = snapshot.val();
 
-    document.getElementById("lien-jeu").href = urlJeu;
-
-    const lienJeuTexte = document.getElementById("lien-jeu-texte");
-    lienJeuTexte.href = urlJeu;
-    lienJeuTexte.textContent = urlJeu;
-
-    document.getElementById("qr-code").src =
-      `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(urlJeu)}`;
-
-    const listeJoueurs = document.getElementById("liste-joueurs");
-    const compteurJoueurs = document.getElementById("compteur-joueurs");
-    const sectionEquipes = document.getElementById("section-equipes");
-    const listeEquipes = document.getElementById("liste-equipes");
-    const compteurEquipes = document.getElementById("compteur-equipes");
-
-    const equipesConfig = [
-      { nom: "Équipe des Lions", animal: "🦁", couleur: "#ff5555" },
-      { nom: "Équipe des Loups", animal: "🐺", couleur: "#55aaff" },
-      { nom: "Équipe des Ours", animal: "🐻", couleur: "#55d98b" },
-      { nom: "Équipe des Renards", animal: "🦊", couleur: "#ff9d42" }
-    ];
-
-    onValue(ref(db, "joueurs"), (snapshot) => {
-      const joueurs = snapshot.val() || {};
-      const pseudos = Object.values(joueurs)
-        .map(joueur => joueur?.pseudo)
-        .filter(Boolean);
-
-      compteurJoueurs.textContent =
-        `${pseudos.length} joueur${pseudos.length === 1 ? "" : "s"}`;
-
-      listeJoueurs.replaceChildren();
-
-      if (pseudos.length === 0) {
-        const ligne = document.createElement("li");
-        ligne.className = "vide";
-        ligne.textContent = "En attente des joueurs…";
-        listeJoueurs.appendChild(ligne);
+      if (etat !== "jeu_1_lance") {
+        window.location.href = "index.html";
         return;
       }
 
-      pseudos.forEach((pseudo) => {
-        const ligne = document.createElement("li");
-        ligne.textContent = `🎉 ${pseudo}`;
-        listeJoueurs.appendChild(ligne);
-      });
-    }, (error) => {
-      compteurJoueurs.textContent = "Impossible de charger les joueurs.";
-      console.error("Erreur de chargement des joueurs :", error);
-    });
-
-    let signatureEquipesPrecedente = "";
-
-    onValue(ref(db, "partie/equipes"), (snapshot) => {
-      const equipes = snapshot.val();
-      listeEquipes.replaceChildren();
-
-      if (!equipes) {
-        document.body.classList.remove("equipes-creees");
-        sectionEquipes.classList.remove("visible");
-        signatureEquipesPrecedente = "";
-        return;
-      }
-
-      const equipesTriees = Object.entries(equipes)
-        .sort(([cleA], [cleB]) => {
-          const numeroA = Number(cleA.match(/\d+/)?.[0] || 0);
-          const numeroB = Number(cleB.match(/\d+/)?.[0] || 0);
-          return numeroA - numeroB;
-        })
-        .slice(0, 4);
-
-      let totalJoueurs = 0;
-
-      equipesConfig.forEach((config, index) => {
-        const [cleEquipe, equipe] = equipesTriees[index] || [
-          `equipe${index + 1}`,
-          { joueurs: {} }
-        ];
-
-        const joueursEquipe = Object.values(equipe?.joueurs || {})
-          .filter(joueur => joueur && joueur.pseudo);
-
-        totalJoueurs += joueursEquipe.length;
-
-        const carte = document.createElement("article");
-        carte.className = "carte-equipe";
-        carte.style.setProperty("--couleur-equipe", config.couleur);
-        carte.style.animationDelay = `${index * 120}ms`;
-
-        const titre = document.createElement("h3");
-        const totem = document.createElement("span");
-        totem.className = "totem";
-        totem.textContent = config.animal;
-        titre.append(totem, document.createTextNode(config.nom));
-
-        const liste = document.createElement("div");
-        liste.className = "joueurs-equipe";
-
-        if (joueursEquipe.length === 0) {
-          const vide = document.createElement("div");
-          vide.className = "joueur-equipe";
-          vide.textContent = "En attente d’un joueur…";
-          liste.appendChild(vide);
-        } else {
-          joueursEquipe.forEach((joueur) => {
-            const nom = document.createElement("div");
-            nom.className = "joueur-equipe";
-            nom.textContent = `🎉 ${joueur.pseudo}`;
-            liste.appendChild(nom);
-          });
-        }
-
-        carte.append(titre, liste);
-        listeEquipes.appendChild(carte);
-      });
-
-      compteurEquipes.textContent =
-        `${totalJoueurs} joueur${totalJoueurs === 1 ? "" : "s"} réparti${totalJoueurs === 1 ? "" : "s"} dans 4 équipes`;
-
-      sectionEquipes.classList.add("visible");
-      document.body.classList.add("equipes-creees");
-
-      const nouvelleSignature = JSON.stringify(equipes);
-      if (nouvelleSignature !== signatureEquipesPrecedente) {
-        signatureEquipesPrecedente = nouvelleSignature;
-        lancerFeuxArtifice();
-      }
-    }, (error) => {
-      console.error("Erreur de chargement des équipes :", error);
+      const ecranJeu1 = document.getElementById("ecran-jeu1");
+      ecranJeu1.style.display = "block";
+      document.body.classList.add("jeu1-actif");
     });
 
     // ====== JEU 1 : LE MYTHO-MÈTRE ======
@@ -811,20 +553,12 @@
         mytho: 2,
         explication: "Le rouge existait déjà avant la pub Coca-Cola, qui l'a juste popularisé !"
       }
-      // 👉 Même liste que la régie et question.html : ajoute tes questions aux 3 endroits
+      // 👉 Même liste que la régie : ajoute tes questions aux 2 endroits
     ];
 
-    const ecranJeu1 = document.getElementById("ecran-jeu1");
     const zoneAffirmations = document.getElementById("affirmations-publiques");
 
-    // Affiche ou masque l’écran du Mytho-mètre selon l’état de la partie.
-    onValue(ref(db, "partie/etat"), (snapshot) => {
-      const jeu1EnCours = snapshot.val() === "jeu_1_lance";
-      ecranJeu1.style.display = jeu1EnCours ? "block" : "none";
-      document.body.classList.toggle("jeu1-actif", jeu1EnCours);
-    });
-
-    // Affiche la question courante (ou la réponse révélée) sur l’écran public.
+    // Affiche la question courante (ou la réponse révélée) sur l'écran public.
     onValue(ref(db, "partie/jeu1"), (snapshot) => {
       const data = snapshot.val() || {};
 
@@ -846,68 +580,6 @@
           .join("<br><br>");
       }
     });
-
-    function lancerFeuxArtifice() {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const canvas = document.getElementById("feux-artifice");
-      const ctx = canvas.getContext("2d");
-
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particules = [];
-      const couleurs = ["#ff5555", "#55aaff", "#55d98b", "#ffcf4a", "#ffffff"];
-
-      for (let explosion = 0; explosion < 8; explosion++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height * 0.7;
-        const couleur = couleurs[explosion % couleurs.length];
-
-        for (let i = 0; i < 35; i++) {
-          const angle = (Math.PI * 2 * i) / 35;
-          const vitesse = 1.5 + Math.random() * 4;
-
-          particules.push({
-            x,
-            y,
-            vx: Math.cos(angle) * vitesse,
-            vy: Math.sin(angle) * vitesse,
-            vie: 45 + Math.random() * 25,
-            couleur
-          });
-        }
-      }
-
-      function animer() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        for (const p of particules) {
-          if (p.vie <= 0) continue;
-
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.035;
-          p.vie--;
-
-          ctx.globalAlpha = Math.min(1, p.vie / 25);
-          ctx.fillStyle = p.couleur;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        ctx.globalAlpha = 1;
-
-        if (particules.some(p => p.vie > 0)) {
-          requestAnimationFrame(animer);
-        } else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-
-      animer();
-    }
   </script>
 </body>
 </html>
