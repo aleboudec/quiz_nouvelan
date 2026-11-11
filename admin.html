@@ -720,15 +720,16 @@
       }
     });
 
-    // Quitter le jeu : retour au menu des jeux et remise à zéro.
+       // Quitter le jeu : retour au menu des jeux et remise à zéro.
     document.getElementById("quitter-jeu").addEventListener("click", async (event) => {
       if (!confirm("Quitter le jeu 1 ? La progression (questions/réponses) sera remise à zéro.")) return;
       const bouton = event.currentTarget;
       bouton.disabled = true;
       try {
-        // Remet l'état de la partie et du jeu 1 à zéro.
+        // Remet l'état de la partie, du jeu 1 ET l'affichage des équipes à zéro.
         await set(ref(db, "partie/etat"), "accueil");
         await set(ref(db, "partie/jeu1"), null);
+        await set(ref(db, "partie/modeEquipes"), false); // 👈 cache les équipes sur l'écran public
 
         // Retour au menu des 5 jeux.
         controlesJeu1.style.display = "none";
