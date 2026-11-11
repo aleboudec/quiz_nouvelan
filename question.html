@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mytho-mètre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh; margin: 0; padding: 20px;
+      display: grid; place-items: center;
+      background: var(--couleur, #171735); color: white;
+      font-family: "Fredoka", Arial, sans-serif; transition: background 0.5s;
+    }
+    main {
+      width: min(520px, 100%); padding: 28px;
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 24px;
+      background: rgba(0,0,0,0.35); text-align: center;
+    }
+    h1 { font-size: clamp(1.4rem, 6vw, 2rem); margin: 0 0 6px; }
+    .equipe { color: #ffcf4a; font-weight: 600; margin-bottom: 20px; }
+    .affirmation {
+      width: 100%; margin: 10px 0; padding: 16px;
+      border: 2px solid rgba(255,255,255,0.25); border-radius: 16px;
+      background: rgba(255,255,255,0.1); color: white;
+      font: inherit; font-size: 1rem; cursor: pointer; text-align: left;
+      transition: 0.2s;
+    }
+    .affirmation:disabled { cursor: default; opacity: 0.9; }
+    .affirmation.choisi { border-color: #ffcf4a; background: rgba(255,207,74,0.25); }
+    .affirmation.mytho { border-color: #d94c5c; background: rgba(217,76,92,0.3); }
+    .affirmation.correct-non-mytho { border-color: #55d98b; }
+    .verdict { min-height: 1.5em; margin-top: 16px; font-weight: 600; }
+    .attente { color: #c9c9df; font-style: italic; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🎭 Le Mytho-mètre</h1>
+    <p class="equipe" id="nom-equipe">Chargement…</p>
+    <div id="zone-jeu"><p class="attente">En attente de la question…</p></div>
+    <p class="verdict" id="verdict"></p>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ⚠️ IMPORTANT : cette liste doit être IDENTIQUE à celle de la régie.
+    const QUESTIONS = [
+      {
+        affirmations: [
+          "En Espagne, on mange 12 raisins à minuit, un par coup de minuit.",
+          "Au Danemark, on casse de la vaisselle contre les portes de ses amis.",
+          "En Écosse, le premier janvier, on s'offre des brosses à dents.",
+          "En Italie, on jette un vieux matelas par la fenêtre à minuit."
+        ],
+        mytho: 2, // index (0-3) de la fausse affirmation
+        explication: "Ce sont les Écossais qui offrent... du charbon ! (le \"first footing\")"
+      },
+      {
+        affirmations: [
+          "L'usage du sapin de Noël vient d'Alsace au XVIe siècle.",
+          "Les boules de Noël étaient à l'origine en verre soufflé.",
+          "Le rouge du Père Noël a été inventé par Coca-Cola.",
+          "La chanvrière est une chanson de Noël traditionnelle."
+        ],
+        mytho: 2,
+        explication: "Le rouge existait déjà avant la pub Coca-Cola, qui l'a juste popularisé !"
+      }
+      // 👉 Ajoute tes autres questions ici (mytho = index de la fausse)
+    ];
+
+    const nomEquipeEl = document.getElementById("nom-equipe");
+    const zoneJeu = document.getElementById("zone-jeu");
+    const verdict = document.getElementById("verdict");
+
+    const idJoueur = localStorage.getItem("idJoueur")
+      || localStorage.getItem("joueurId");
+    const cleEquipe = localStorage.getItem("equipeJoueur");
+    nomEquipeEl.textContent = localStorage.getItem("nomEquipe") || "";
+
+    let maQuestion = null;   // question affichée actuellement
+    let reponseAffichee = false;
+    let monVote = null;
+
+    // Récupère la question active + l'état de la réponse.
+    onValue(ref(db, "partie/jeu1"), (snap) => {
+      const data = snap.val() || {};
+      const index = data.questionIndex;
+      maQuestion = (index == null) ? null : QUESTIONS[index];
+      reponseAffichee = data.reponseAffichee === true;
+      monVote = (data.votes && data.votes[cleEquipe] != null)
+        ? data.votes[cleEquipe] : null;
+      afficherQuestion();
+    });
+
+    function afficherQuestion() {
+      if (!maQuestion) {
+        zoneJeu.innerHTML = '<p class="attente">En attente de la question…</p>';
+        verdict.textContent = "";
+        return;
+      }
+      zoneJeu.innerHTML = "";
+      maQuestion.affirmations.forEach((texte, i) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "affirmation";
+        btn.textContent = texte;
+
+        if (reponseAffichee) {
+          btn.disabled = true;
+          if (i === maQuestion.mytho) btn.classList.add("mytho");
+          else if (monVote === i) btn.classList.add("correct-non-mytho");
+        } else if (monVote === i) {
+          btn.classList.add("choisi");
+          btn.disabled = true; // vote déjà enregistré
+        }
+
+        btn.addEventListener("click", () => voter(i));
+        zoneJeu.appendChild(btn);
+      });
+
+      if (reponseAffichee) {
+        const gagne = monVote === maQuestion.mytho;
+        verdict.textContent = gagne
+          ? `✅ Bien joué, +3 points ! ${maQuestion.explication}`
+          : (monVote == null
+            ? `⏱ Pas de vote… La mytho était : « ${maQuestion.affirmations[maQuestion.mytho]} »`
+            : `❌ Raté ! La mytho était : « ${maQuestion.affirmations[maQuestion.mytho]} ». ${maQuestion.explication}`);
+      } else if (monVote != null) {
+        verdict.textContent = "🗳 Vote enregistré ! En attente des autres équipes…";
+      } else {
+        verdict.textContent = "Quelle affirmation est la mytho ? 🤔";
+      }
+    }
+
+    async function voter(index) {
+      if (reponseAffichee || monVote != null || !cleEquipe) return;
+      try {
+        await set(ref(db, `partie/jeu1/votes/${cleEquipe}`), index);
+      } catch (e) {
+        console.error(e);
+        verdict.textContent = "Erreur, réessaie !";
+      }
+    }
+  </script>
+</body>
+</html>
