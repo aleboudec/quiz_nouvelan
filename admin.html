@@ -641,6 +641,28 @@
       }
     });
 
+        // Quitter le jeu : retour au menu des jeux et remise à zéro.
+    document.getElementById("quitter-jeu").addEventListener("click", async (event) => {
+      if (!confirm("Quitter le jeu 1 ? La progression (questions/réponses) sera remise à zéro.")) return;
+      const bouton = event.currentTarget;
+      bouton.disabled = true;
+      try {
+        // Remet l'état de la partie et du jeu 1 à zéro.
+        await set(ref(db, "partie/etat"), "accueil");
+        await set(ref(db, "partie/jeu1"), null);
+
+        // Retour au menu des 5 jeux.
+        controlesJeu1.style.display = "none";
+        menuJeux.style.display = "grid";
+        statut.textContent = "Tu as quitté le jeu 1. Choisis un autre jeu ! 👋";
+      } catch (e) {
+        console.error(e);
+        statut.textContent = "Impossible de quitter le jeu. Vérifie la connexion à Firebase.";
+      } finally {
+        bouton.disabled = false;
+      }
+    });
+
     // Afficher la réponse
     document.getElementById("afficher-reponse").addEventListener("click", async (event) => {
       const bouton = event.currentTarget;
