@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Le Mytho-mètre — À toi de jouer !</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      --couleur-equipe: #171735;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      background: var(--couleur-equipe);
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+      transition: background 0.8s ease;
+    }
+
+    main {
+      width: min(520px, 100%);
+      padding: 32px 24px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 28px;
+      background: rgba(23, 23, 53, 0.94);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    h1 { margin: 0 0 6px; font-size: clamp(1.6rem, 7vw, 2.2rem); }
+    h1 span { color: #ffcf4a; }
+
+    .nom-equipe {
+      margin: 0 0 24px;
+      color: #d0d0e5;
+      font-size: 1rem;
+    }
+
+    .question-principale {
+      padding: 20px;
+      border: 2px solid #ffcf4a;
+      border-radius: 18px;
+      background: rgba(20, 21, 57, 0.9);
+      font-size: 1.1rem;
+      line-height: 1.4;
+      margin-bottom: 18px;
+    }
+
+    #zone-reponses {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .case-reponse {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 16px;
+      background: rgba(37, 37, 77, 0.9);
+      color: white;
+      font: inherit;
+      font-size: 1rem;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.2s ease;
+    }
+
+    .case-reponse:active { transform: scale(0.97); }
+
+    .case-reponse.choisie {
+      border-color: #ffcf4a;
+      background: rgba(255, 207, 74, 0.2);
+    }
+
+    .case-reponse.correcte {
+      border-color: #55d98b;
+      background: rgba(85, 217, 139, 0.25);
+    }
+
+    .case-reponse.fausse {
+      opacity: 0.45;
+      border-color: #ff6b6b;
+    }
+
+    #resultat { min-height: 1.5em; margin: 0; color: #d0d0e5; font-size: 1rem; }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Le <span>Mytho-mètre</span> 🎭</h1>
+    <p class="nom-equipe" id="nom-equipe"></p>
+
+    <div id="zone-jeu">
+      <p id="resultat">En attente de la question… ⏳</p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import {
+      getDatabase, ref, get, set, onValue
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+    import { QUESTIONS } from "./questions.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const zoneJeu = document.getElementById("zone-jeu");
+    const nomEquipe = document.getElementById("nom-equipe");
+
+    const joueurId = localStorage.getItem("joueurId") || localStorage.getItem("idJoueur");
+    const cleEquipe = localStorage.getItem("equipeJoueur");
+    nomEquipe.textContent = localStorage.getItem("nomEquipe")
+      ? `Bonne chance à l'équipe ${localStorage.getItem("nomEquipe")} 💪`
+      : "";
+
+    // Retour à l'accueil si la régie quitte le jeu.
+    onValue(ref(db, "partie/etat"), (snapshot) => {
+      if (snapshot.val() !== "jeu_1_lance") {
+        window.location.href = "jeu.html";
+      }
+    });
+
+    let questionCourante = null;
+    let choixFait = null;
+
+    // Écoute la question courante + la révélation.
+    onValue(ref(db, "partie/jeu1"), async (snapshot) => {
+      const donnees = snapshot.val();
+      if (!donnees || donnees.questionIndex == null) {
+        zoneJeu.innerHTML = `<p id="resultat">En attente de la question… ⏳</p>`;
+        return;
+      }
+
+      const q = QUESTIONS[donnees.questionIndex];
+      if (!q) {
+        zoneJeu.innerHTML = `<p id="resultat">C'est fini ! 🎉 Merci d'avoir joué !</p>`;
+        return;
+      }
+
+      // Nouvelle question : on réinitialise le vote.
+      if (donnees.questionIndex !== questionCourante) {
+        questionCourante = donnees.questionIndex;
+        choixFait = null;
+      }
+
+      // Le vote déjà enregistré du joueur (au cas où il recharge la page).
+      if (choixFait == null && cleEquipe && joueurId) {
+        try {
+          const snapVote = await get(ref(db, `partie/jeu1/votes/${cleEquipe}/${joueurId}`));
+          const vote = snapVote.val();
+          if (vote && vote.question === donnees.questionIndex) choixFait = vote.choix;
+        } catch (e) { console.error(e); }
+      }
+
+      afficherQuestion(q, donnees.reponseAffichee);
+    });
+
+    function afficherQuestion(q, reponseAffichee) {
+      const lettres = ["A", "B", "C", "D"];
+      let html = `<div class="question-principale">${q.question}</div><div id="zone-reponses">`;
+
+      q.affirmations.forEach((affirmation, index) => {
+        let classe = "case-reponse";
+        let action = "";
+        if (reponseAffichee) {
+          if (index === q.mytho) classe += " correcte";
+          else if (index === choixFait) classe += " fausse";
+        } else if (index === choixFait) {
+          classe += " choisie";
+        } else if (choixFait == null) {
+          action = ` data-index="${index}"`;
+        }
+        html += `<button class="${classe}"${action} type="button"><strong>${lettres[index]}.</strong> ${affirmation}</button>`;
+      });
+
+      html += `</div><p id="resultat">${message(reponseAffichee)}</p>`;
+      zoneJeu.innerHTML = html;
+
+      if (!reponseAffichee && choixFait == null) {
+        zoneJeu.querySelectorAll("[data-index]").forEach((bouton) => {
+          bouton.addEventListener("click", () => voter(Number(bouton.dataset.index)));
+        });
+      }
+    }
+
+    function message(reponseAffichee) {
+      if (reponseAffichee) return "La réponse est révélée sur l'écran ! 📺";
+      if (choixFait != null) return "✅ Réponse envoyée ! En attente de la révélation…";
+      return "Touche la mytho selon toi ! 👆";
+    }
+
+    async function voter(index) {
+      if (choixFait != null) return;
+      choixFait = index;
+
+      const q = QUESTIONS[questionCourante];
+      afficherQuestion(q, false);
+
+      if (!cleEquipe || !joueurId) {
+        document.getElementById("resultat").textContent =
+          "Impossible de voter : équipe inconnue. Reconnecte-toi depuis jeu.html.";
+        return;
+      }
+
+      try {
+        await set(ref(db, `partie/jeu1/votes/${cleEquipe}/${joueurId}`), {
+          choix: index,
+          question: questionCourante
+        });
+      } catch (error) {
+        console.error("Erreur d'envoi du vote :", error);
+        document.getElementById("resultat").textContent = "Erreur d'envoi. Réessaie !";
+        choixFait = null;
+      }
+    }
+  </script>
+</body>
+</html>
