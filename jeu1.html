@@ -3,458 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quiz d'Alan</title>
+  <title>Le Mytho-mètre — Quiz d'Alan</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       min-height: 100vh;
-      padding: 6vw;
-      display: flex;
-      align-items: flex-start;
+      padding: 5vw;
       color: white;
       font-family: "Fredoka", Arial, sans-serif;
-      background: #171735 url("animateur.png") center / cover no-repeat;
+      background: linear-gradient(135deg, #171735 0%, #2a2a5e 100%);
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(
-        90deg,
-        rgba(12, 13, 40, 0.94) 0%,
-        rgba(12, 13, 40, 0.82) 48%,
-        rgba(12, 13, 40, 0.28) 100%
-      );
-      pointer-events: none;
-    }
-
-    /* Écran d'accueil visible au départ */
-    #ecran-bienvenue {
-      position: fixed;
-      inset: 0;
-      z-index: 2;
-      display: grid;
-      place-content: center;
-      padding: 24px;
-      padding-right: 10vw;
-      text-align: center;
-    }
-
-    #ecran-bienvenue h1 {
-      margin: 0;
-      font-size: clamp(3rem, 10vw, 8rem);
-      line-height: 0.98;
-      letter-spacing: -2px;
-      text-shadow: 4px 5px 0 #09091d;
-    }
-
-    #ecran-bienvenue h1 span {
-      color: #ffcf4a;
-    }
-
-    /* L'écran du jeu est caché tant que la régie ne l'a pas demandé */
-    .contenu {
-      display: none;
-      position: relative;
-      z-index: 1;
-      width: min(1250px, 100%);
-      margin: 0 auto;
-      grid-template-columns: 0.9fr 1.1fr;
-      align-items: start;
-      gap: 40px;
-    }
-
-    body.mode-jeu .contenu {
-      display: grid;
-    }
-
-    body.mode-jeu #ecran-bienvenue {
-      display: none;
-    }
-
-    .intro {
-      align-self: start;
-    }
-
-    h1 {
-      margin: 0 0 30px;
-      font-size: clamp(3rem, 6vw, 6rem);
-      line-height: 0.98;
-      letter-spacing: -2px;
-      text-shadow: 4px 5px 0 #09091d;
-    }
-
-    .intro h1 span {
-      color: #ffcf4a;
-    }
-
-    .bloc-qr {
-      width: fit-content;
-      max-width: 100%;
-      text-align: center;
-    }
-
-    .bloc-qr p {
-      margin: 0 0 12px;
-      font-size: 1.1rem;
-    }
-
-    #qr-code {
-      display: block;
-      width: min(220px, 60vw);
-      aspect-ratio: 1;
-      margin: 0 auto 10px;
-      padding: 8px;
-      border-radius: 12px;
-      background: white;
-    }
-
-    #lien-jeu-texte {
-      display: block;
-      color: #ffcf4a;
-      overflow-wrap: anywhere;
-    }
-
-    .panneaux {
-      display: grid;
-      gap: 20px;
-    }
-
-    .carte {
-      padding: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 24px;
-      background: rgba(20, 21, 57, 0.86);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
-    }
-
-    .carte h2 {
+    .titre-jeu1 {
       margin: 0 0 8px;
-      font-size: 1.8rem;
-    }
-
-    .compteur {
-      margin: 0 0 16px;
-      color: #ffcf4a;
-    }
-
-    #liste-joueurs {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
-
-    #liste-joueurs li,
-    .joueur-equipe {
-      min-width: 0;
-      padding: 8px 10px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.12);
-      overflow-wrap: anywhere;
-      text-align: center;
-    }
-
-    .vide {
-      color: #d0d0e5;
-    }
-
-    #section-equipes {
-      display: none;
-    }
-
-    #section-equipes.visible {
-      display: block;
-      animation: apparition 0.6s ease both;
-    }
-
-    #liste-equipes {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .carte-equipe {
-      --couleur-equipe: #ffcf4a;
-      min-width: 0;
-      padding: 16px;
-      border: 2px solid var(--couleur-equipe);
-      border-radius: 18px;
-      background: color-mix(
-        in srgb,
-        var(--couleur-equipe) 15%,
-        rgba(20, 21, 57, 0.92)
-      );
-      box-shadow: 0 0 24px color-mix(in srgb, var(--couleur-equipe) 35%, transparent);
-      animation: apparition 0.55s ease both;
-    }
-
-    .carte-equipe h3 {
-      margin: 0 0 12px;
-      color: var(--couleur-equipe);
-      font-size: 1.3rem;
-      text-align: center;
-    }
-
-    .totem {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 2.7rem;
-    }
-
-    .joueurs-equipe {
-      display: grid;
-      gap: 7px;
-    }
-
-    .joueur-equipe {
-      text-align: left;
-    }
-
-    /* ====== ÉCRAN DU MYTHO-MÈTRE (JEU 1) ====== */
-    #ecran-jeu1 {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 3;
-      padding: 5vw;
-      overflow: auto;
-    }
-
-    #ecran-jeu1 .titre-jeu1 {
-      margin: 0;
       font-size: clamp(2rem, 6vw, 4.5rem);
       text-shadow: 4px 5px 0 #09091d;
     }
 
-    #ecran-jeu1 .titre-jeu1 span {
-      color: #ffcf4a;
+    .titre-jeu1 span { color: #ffcf4a; }
+
+    .sous-titre {
+      margin: 0 0 40px;
+      color: #d0d0e5;
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
     }
 
-    #ecran-jeu1 .sous-titre {
-      margin: 10px 0 20px;
-      font-size: clamp(1.1rem, 3vw, 1.8rem);
-      color: #ffcf4a;
+    .regles {
+      margin: 0 0 40px;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      color: #d0d0e5;
+      font-size: 1.2rem;
     }
 
-    #ecran-jeu1 .regles {
-      font-size: clamp(1rem, 2.5vw, 1.5rem);
-      line-height: 1.9;
-      margin: 0 0 20px;
+    /* ====== ZONE D'AFFICHAGE DES QUESTIONS ====== */
+    #zone-question {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      max-width: 1100px;
+    }
+
+    .question-principale {
+      padding: 30px 34px;
+      border: 3px solid #ffcf4a;
+      border-radius: 22px;
+      background: rgba(20, 21, 57, 0.9);
+      font-size: clamp(1.4rem, 3vw, 2.3rem);
+      line-height: 1.4;
+      text-align: center;
       text-shadow: 2px 2px 0 #09091d;
+      box-shadow: 0 0 30px rgba(255, 207, 74, 0.3);
     }
 
-    #affirmations-publiques {
-      font-size: clamp(1.1rem, 2.8vw, 1.7rem);
-      line-height: 2;
+    .grille-reponses {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
     }
 
-    #feux-artifice {
-      position: fixed;
-      inset: 0;
-      z-index: 5;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
+    .case-reponse {
+      padding: 26px 30px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 18px;
+      background: rgba(37, 37, 77, 0.9);
+      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      line-height: 1.4;
+      text-shadow: 1px 1px 0 #09091d;
     }
 
-    #activer-son {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      z-index: 10;
-      padding: 10px 14px;
-      border: 0;
-      border-radius: 12px;
-      background: #ffcf4a;
-      color: #171735;
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
+    .case-reponse.correcte {
+      border-color: #55d98b;
+      background: rgba(85, 217, 139, 0.25);
+      box-shadow: 0 0 24px rgba(85, 217, 139, 0.4);
     }
 
-    #activer-son:disabled {
-      opacity: 0.8;
-      cursor: default;
+    .case-reponse.fausse {
+      opacity: 0.45;
+      border-color: #ff6b6b;
     }
 
-    @keyframes apparition {
-      from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.97);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    .revelation {
+      padding: 24px 30px;
+      border-radius: 18px;
+      background: rgba(255, 107, 107, 0.15);
+      border: 2px dashed #ff6b6b;
+      font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+      line-height: 1.5;
+      text-align: center;
     }
 
-    /* Quand le jeu 1 est affiché, on masque tout le reste */
-    body.jeu1-actif #ecran-bienvenue,
-    body.jeu1-actif .contenu,
-    body.jeu1-actif #section-equipes {
-      display: none;
-    }
+    .revelation small { color: #ffcf4a; display: block; margin-top: 8px; }
 
-    @media (max-width: 800px) {
-      body {
-        padding: 28px;
-        background-position: 65% center;
-      }
-
-      body::before {
-        background: linear-gradient(
-          0deg,
-          rgba(12, 13, 40, 0.97) 0%,
-          rgba(12, 13, 40, 0.86) 60%,
-          rgba(12, 13, 40, 0.5) 100%
-        );
-      }
-
-      .contenu {
-        grid-template-columns: 1fr;
-        gap: 30px;
-        padding: 25px 0;
-      }
-
-      .intro h1 {
-        font-size: clamp(2.8rem, 12vw, 4.5rem);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .carte {
-        padding: 18px;
-      }
-
-      #liste-joueurs {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      body.equipes-creees .carte-equipe {
-        padding: 6px;
-        border-radius: 12px;
-      }
-
-      body.equipes-creees .carte-equipe h3 {
-        font-size: clamp(0.75rem, 3.5vw, 1.1rem);
-      }
-
-      body.equipes-creees .totem {
-        font-size: clamp(1.2rem, 7vw, 2rem);
-      }
-
-      body.equipes-creees .joueur-equipe {
-        padding: 4px;
-        font-size: clamp(0.6rem, 3vw, 0.85rem);
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
+    .attente {
+      padding: 30px;
+      text-align: center;
+      color: #d0d0e5;
+      font-size: 1.4rem;
     }
   </style>
 </head>
 
 <body>
-  <!-- Écran visible avant la commande de la régie -->
-  <section id="ecran-bienvenue">
-    <div>
-      <h1>
-        Alan t'en pose,<br>
-        <span>des questions&nbsp;!</span>
-      </h1>
-    </div>
-  </section>
+  <h1 class="titre-jeu1">Premier jeu : Le <span>Mytho-mètre</span> 🎭</h1>
+  <p class="sous-titre">Saurez-vous démêler le vrai du faux ?</p>
 
-  <!-- Écran du jeu, affiché quand la régie l'active -->
-  <main class="contenu">
-    <section class="intro">
-      <h1>
-        Alan t'en pose,<br>
-        <span>des questions&nbsp;!</span>
-      </h1>
+  <ul class="regles">
+    <li>✅ 4 affirmations : 3 vraies et 1 fausse… ou 3 fausses et 1 vraie !</li>
+    <li>🎯 Chaque équipe doit démasquer la mytho sur son téléphone.</li>
+    <li>🏆 <strong>3 points</strong> par bonne réponse.</li>
+  </ul>
 
-      <div class="bloc-qr">
-        <p>📱 Scanne ce QR code pour rejoindre le jeu</p>
-
-        <a id="lien-jeu" href="jeu.html">
-          <img id="qr-code" alt="QR code pour accéder à la page du jeu">
-        </a>
-
-        <a id="lien-jeu-texte" href="jeu.html"></a>
-      </div>
-    </section>
-
-    <div class="panneaux">
-      <section class="carte carte-joueurs" aria-live="polite">
-        <h2>🎮 Joueurs connectés</h2>
-        <p class="compteur" id="compteur-joueurs">Chargement…</p>
-
-        <ul id="liste-joueurs">
-          <li class="vide">En attente des joueurs…</li>
-        </ul>
-      </section>
-
-      <section class="carte" id="section-equipes" aria-live="polite">
-        <h2>🎆 Les équipes sont prêtes !</h2>
-        <p class="compteur" id="compteur-equipes"></p>
-        <div id="liste-equipes"></div>
-      </section>
-    </div>
-  </main>
-
-  <!-- ====== ÉCRAN DU MYTHO-MÈTRE (JEU 1) ====== -->
-  <section id="ecran-jeu1">
-    <h1 class="titre-jeu1">
-      Premier jeu : Le <span>Mytho-mètre</span> 🎭
-    </h1>
-    <p class="sous-titre">Saurez-vous démêler le vrai du faux ?</p>
-
-    <ul class="regles">
-      <li>✅ 4 affirmations : 3 vraies et 1 fausse… ou 3 fausses et 1 vraie&nbsp;!</li>
-      <li>🎯 Chaque équipe doit démasquer la mytho sur son téléphone.</li>
-      <li>🏆 <strong>3 points</strong> par bonne réponse.</li>
-    </ul>
-
-    <div id="affirmations-publiques"></div>
-  </section>
-
-  <!-- Le fichier intro.wav doit être dans le même dossier que jeu1.html -->
-  <audio id="sonIntroPublic" src="intro.wav" preload="auto"></audio>
-
-  <button id="activer-son" type="button">🔊 Activer le son</button>
-
-  <canvas id="feux-artifice" aria-hidden="true"></canvas>
+  <div id="zone-question">
+    <p class="attente">En attente de la première question… ⏳</p>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
     import {
-      getDatabase,
-      ref,
-      onValue
+      getDatabase, ref, onValue
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+    import { QUESTIONS } from "./questions.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyB-Hv3dU-vuB8I0IAk3AUdIiqv1Ykmn4x8",
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
       authDomain: "nouvelan-a256f.firebaseapp.com",
       databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "nouvelan-a256f",
@@ -466,96 +147,50 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const sonIntroPublic = document.getElementById("sonIntroPublic");
-    const boutonActiverSon = document.getElementById("activer-son");
+    const zoneQuestion = document.getElementById("zone-question");
 
-    // Clique une fois sur l'écran public pour autoriser le son.
-    boutonActiverSon.addEventListener("click", async () => {
-      try {
-        sonIntroPublic.muted = true;
-        await sonIntroPublic.play();
-        sonIntroPublic.pause();
-        sonIntroPublic.currentTime = 0;
-        sonIntroPublic.muted = false;
-
-        boutonActiverSon.textContent = "✅ Son activé";
-        boutonActiverSon.disabled = true;
-      } catch (error) {
-        console.error("Impossible d'activer le son :", error);
-        sonIntroPublic.muted = false;
-        boutonActiverSon.textContent = "⚠️ Vérifie intro.wav";
-      }
-    });
-
-    // La régie commande la musique via partie/introCommande.
-    onValue(
-      ref(db, "partie/introCommande"),
-      async (snapshot) => {
-        const commande = snapshot.val();
-
-        if (commande?.action === "lecture") {
-          try {
-            sonIntroPublic.currentTime = 0;
-            await sonIntroPublic.play();
-          } catch (error) {
-            console.error(
-              "Impossible de lancer le son sur l'écran public :",
-              error
-            );
-          }
-        }
-
-        if (commande?.action === "arret") {
-          sonIntroPublic.pause();
-          sonIntroPublic.currentTime = 0;
-        }
-      },
-      (error) => {
-        console.error("Erreur d'écoute de la commande audio :", error);
-      }
-    );
-
-    // ====== ÉTAT DE LA PARTIE ======
-    // Si la régie quitte le jeu (état différent de jeu_1_lance),
-    // on retourne automatiquement à index.html.
+    // Retour à l'accueil si la régie quitte le jeu.
     onValue(ref(db, "partie/etat"), (snapshot) => {
-      const etat = snapshot.val();
-
-      if (etat !== "jeu_1_lance") {
+      if (snapshot.val() !== "jeu_1_lance") {
         window.location.href = "index.html";
-        return;
       }
-
-      const ecranJeu1 = document.getElementById("ecran-jeu1");
-      ecranJeu1.style.display = "block";
-      document.body.classList.add("jeu1-actif");
     });
 
-    import { QUESTIONS } from "./questions.js";
-
-    const zoneAffirmations = document.getElementById("affirmations-publiques");
-
-    // Affiche la question courante (ou la réponse révélée) sur l'écran public.
+    // Affiche la question courante et la révélation éventuelle.
     onValue(ref(db, "partie/jeu1"), (snapshot) => {
-      const data = snapshot.val() || {};
-
-      if (data.questionIndex == null) {
-        zoneAffirmations.innerHTML = "<em>En attente de la première question…</em>";
+      const donnees = snapshot.val();
+      if (!donnees || donnees.questionIndex == null) {
+        zoneQuestion.innerHTML = `<p class="attente">En attente de la première question… ⏳</p>`;
         return;
       }
 
-      const q = QUESTIONS[data.questionIndex];
-      if (!q) return;
-
-      if (data.reponseAffichee) {
-        zoneAffirmations.innerHTML =
-          `🚨 La mytho était : « <strong style="color:#ff6b6b;">${q.affirmations[q.mytho]}</strong> »<br>` +
-          `<small style="color:#ffcf4a;">${q.explication}</small>`;
-      } else {
-        zoneAffirmations.innerHTML = q.affirmations
-          .map((a, i) => `${String.fromCharCode(65 + i)}. ${a}`)
-          .join("<br><br>");
+      const q = QUESTIONS[donnees.questionIndex];
+      if (!q) {
+        zoneQuestion.innerHTML = `<p class="attente">Fin des questions ! 🎉</p>`;
+        return;
       }
+
+      const lettres = ["A", "B", "C", "D"];
+
+      let html = `<div class="question-principale">${q.question}</div>`;
+      html += `<div class="grille-reponses">`;
+
+      q.affirmations.forEach((affirmation, index) => {
+        let classe = "case-reponse";
+        if (donnees.reponseAffichee) {
+          if (index === q.mytho) classe += " correcte";
+          else classe += " fausse";
+        }
+        html += `<div class="${classe}"><strong>${lettres[index]}.</strong> ${affirmation}</div>`;
+      });
+
+      html += `</div>`;
+
+      if (donnees.reponseAffichee) {
+        html += `<div class="revelation">🚨 La mytho était : <strong>« ${q.affirmations[q.mytho]} »</strong><small>${q.explication}</small></div>`;
+      }
+
+      zoneQuestion.innerHTML = html;
     });
   </script>
 </body>
