@@ -130,7 +130,6 @@
       <p id="message" aria-live="polite"></p>
     </form>
 
-   
   </main>
 
   <script type="module">
@@ -140,6 +139,8 @@
       ref,
       push,
       set,
+      get,
+      update,
       onValue
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
@@ -183,19 +184,44 @@
       message.textContent = "Connexion en cours…";
 
       try {
-        const nouveauJoueur = push(ref(db, "joueurs"));
-        localStorage.setItem("idJoueur", nouveauJoueur.key);
-        joueurId = nouveauJoueur.key;
+        // 1️⃣ On regarde tous les joueurs existants
+        const donneesJoueurs = (await get(ref(db, "joueurs"))).val() || {};
 
-        await set(nouveauJoueur, {
-          pseudo,
-          rejointLe: Date.now()
-        });
+        // 2️⃣ On cherche un joueur NON bloqué avec exactement ce pseudo
+        let idExistant = null;
+        for (const [id, joueur] of Object.entries(donneesJoueurs)) {
+          if (joueur && joueur.pseudo === pseudo) {
+            if (joueur.bloque) {
+              message.textContent = "Ce pseudo est bloqué par l’organisateur. 🚫";
+              bouton.disabled = false;
+              return;
+            }
+            idExistant = id;
+            break;
+          }
+        }
+
+        if (idExistant) {
+          // 3️⃣ Pseudo existant → on le reconnecte (pas de nouveau joueur)
+          joueurId = idExistant;
+          await update(ref(db, `joueurs/${joueurId}`), { rejointLe: Date.now() });
+          message.textContent = `Content de te revoir ${pseudo} ! Reconnexion… 🎉`;
+        } else {
+          // 4️⃣ Nouveau pseudo → on crée le joueur
+          const nouveauJoueur = push(ref(db, "joueurs"));
+          joueurId = nouveauJoueur.key;
+
+          await set(nouveauJoueur, {
+            pseudo,
+            rejointLe: Date.now()
+          });
+
+          message.textContent = "Tu as rejoint la partie ! En attente des équipes…";
+        }
 
         localStorage.setItem("joueurId", joueurId);
+        localStorage.setItem("idJoueur", joueurId);
         localStorage.setItem("pseudoJoueur", pseudo);
-
-        message.textContent = "Tu as rejoint la partie ! En attente des équipes…";
 
         ecouterEquipe();
         ecouterLancement();
