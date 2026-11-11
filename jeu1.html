@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz d’Alan</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 6vw;
+      display: flex;
+      align-items: flex-start;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+      background: #171735 url("animateur.png") center / cover no-repeat;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(12, 13, 40, 0.94) 0%,
+        rgba(12, 13, 40, 0.82) 48%,
+        rgba(12, 13, 40, 0.28) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Écran d’accueil visible au départ */
+    #ecran-bienvenue {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-content: center;
+      padding: 24px;
+      padding-right: 10vw;
+      text-align: center;
+    }
+
+    #ecran-bienvenue h1 {
+      margin: 0;
+      font-size: clamp(3rem, 10vw, 8rem);
+      line-height: 0.98;
+      letter-spacing: -2px;
+      text-shadow: 4px 5px 0 #09091d;
+    }
+
+    #ecran-bienvenue h1 span {
+      color: #ffcf4a;
+    }
+
+    #ecran-bienvenue p {
+      margin: 20px 0 0;
+      color: #ffcf4a;
+      font-size: clamp(1.2rem, 3vw, 2rem);
+    }
+
+    /* L’écran du jeu est caché tant que la régie ne l’a pas demandé */
+    .contenu {
+      display: none;
+      position: relative;
+      z-index: 1;
+      width: min(1250px, 100%);
+      margin: 0 auto;
+      grid-template-columns: 0.9fr 1.1fr;
+      align-items: start;
+      gap: 40px;
+    }
+
+    body.mode-jeu .contenu {
+      display: grid;
+    }
+
+    body.mode-jeu #ecran-bienvenue {
+      display: none;
+    }
+
+    .intro {
+      align-self: start;
+    }
+
+    h1 {
+      margin: 0 0 30px;
+      font-size: clamp(3rem, 6vw, 6rem);
+      line-height: 0.98;
+      letter-spacing: -2px;
+      text-shadow: 4px 5px 0 #09091d;
+    }
+
+    .intro h1 span {
+      color: #ffcf4a;
+    }
+
+    .bloc-qr {
+      width: fit-content;
+      max-width: 100%;
+      text-align: center;
+    }
+
+    .bloc-qr p {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+    }
+
+    #qr-code {
+      display: block;
+      width: min(220px, 60vw);
+      aspect-ratio: 1;
+      margin: 0 auto 10px;
+      padding: 8px;
+      border-radius: 12px;
+      background: white;
+    }
+
+    #lien-jeu-texte {
+      display: block;
+      color: #ffcf4a;
+      overflow-wrap: anywhere;
+    }
+
+    .panneaux {
+      display: grid;
+      gap: 20px;
+    }
+
+    .carte {
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 24px;
+      background: rgba(20, 21, 57, 0.86);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+    }
+
+    .carte h2 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+    }
+
+    .compteur {
+      margin: 0 0 16px;
+      color: #ffcf4a;
+    }
+
+    #liste-joueurs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    #liste-joueurs li,
+    .joueur-equipe {
+      min-width: 0;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow-wrap: anywhere;
+      text-align: center;
+    }
+
+    .vide {
+      color: #d0d0e5;
+    }
+
+    #section-equipes {
+      display: none;
+    }
+
+    #section-equipes.visible {
+      display: block;
+      animation: apparition 0.6s ease both;
+    }
+
+    #liste-equipes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .carte-equipe {
+      --couleur-equipe: #ffcf4a;
+      min-width: 0;
+      padding: 16px;
+      border: 2px solid var(--couleur-equipe);
+      border-radius: 18px;
+      background: color-mix(
+        in srgb,
+        var(--couleur-equipe) 15%,
+        rgba(20, 21, 57, 0.92)
+      );
+      box-shadow: 0 0 24px color-mix(in srgb, var(--couleur-equipe) 35%, transparent);
+      animation: apparition 0.55s ease both;
+    }
+
+    .carte-equipe h3 {
+      margin: 0 0 12px;
+      color: var(--couleur-equipe);
+      font-size: 1.3rem;
+      text-align: center;
+    }
+
+    .totem {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 2.7rem;
+    }
+
+    .joueurs-equipe {
+      display: grid;
+      gap: 7px;
+    }
+
+    .joueur-equipe {
+      text-align: left;
+    }
+
+    /* ====== ÉCRAN DU MYTHO-MÈTRE (JEU 1) ====== */
+    #ecran-jeu1 {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      padding: 5vw;
+      overflow: auto;
+    }
+
+    #ecran-jeu1 .titre-jeu1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4.5rem);
+      text-shadow: 4px 5px 0 #09091d;
+    }
+
+    #ecran-jeu1 .titre-jeu1 span {
+      color: #ffcf4a;
+    }
+
+    #ecran-jeu1 .sous-titre {
+      margin: 10px 0 20px;
+      font-size: clamp(1.1rem, 3vw, 1.8rem);
+      color: #ffcf4a;
+    }
+
+    #ecran-jeu1 .regles {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      line-height: 1.9;
+      margin: 0 0 20px;
+      text-shadow: 2px 2px 0 #09091d;
+    }
+
+    #affirmations-publiques {
+      font-size: clamp(1.1rem, 2.8vw, 1.7rem);
+      line-height: 2;
+    }
+
+    #feux-artifice {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #activer-son {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 10;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #ffcf4a;
+      color: #171735;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #activer-son:disabled {
+      opacity: 0.8;
+      cursor: default;
+    }
+
+    @keyframes apparition {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Mode plein écran : les équipes restent visibles */
+    body.equipes-creees {
+      display: block;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body.equipes-creees::before {
+      background: rgba(12, 13, 40, 0.82);
+    }
+
+    body.equipes-creees .contenu {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      margin: 0;
+    }
+
+    body.equipes-creees .intro,
+    body.equipes-creees .carte-joueurs {
+      display: none;
+    }
+
+    body.equipes-creees .panneaux {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    body.equipes-creees #section-equipes.visible {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: block;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+      padding: 16px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    body.equipes-creees #section-equipes > h2,
+    body.equipes-creees #compteur-equipes {
+      position: absolute;
+      left: 50%;
+      width: max-content;
+      max-width: 90vw;
+      transform: translateX(-50%);
+      text-align: center;
+      text-shadow: 0 3px 10px #09091d;
+    }
+
+    body.equipes-creees #section-equipes > h2 {
+      top: 10px;
+      margin: 0;
+      font-size: clamp(1.3rem, 4vh, 2.5rem);
+    }
+
+    body.equipes-creees #compteur-equipes {
+      top: 55px;
+      margin: 0;
+      font-size: clamp(0.8rem, 2vh, 1rem);
+    }
+
+    body.equipes-creees #liste-equipes {
+      position: absolute;
+      inset: 90px 16px 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    body.equipes-creees .carte-equipe {
+      min-height: 0;
+      padding: clamp(6px, 1.5vh, 16px);
+      overflow: hidden;
+    }
+
+    body.equipes-creees .carte-equipe h3 {
+      margin-bottom: clamp(4px, 0.8vh, 12px);
+      font-size: clamp(0.85rem, 2.5vh, 1.3rem);
+    }
+
+    body.equipes-creees .totem {
+      margin-bottom: 2px;
+      font-size: clamp(1.4rem, 5vh, 2.7rem);
+    }
+
+    body.equipes-creees .joueurs-equipe {
+      gap: clamp(3px, 0.6vh, 7px);
+    }
+
+    body.equipes-creees .joueur-equipe {
+      padding: clamp(3px, 0.7vh, 8px);
+      font-size: clamp(0.65rem, 1.8vh, 1rem);
+    }
+
+    /* Quand le jeu 1 est affiché, on masque tout le reste */
+    body.jeu1-actif #ecran-bienvenue,
+    body.jeu1-actif .contenu,
+    body.jeu1-actif #section-equipes {
+      display: none;
+    }
+
+    @media (max-width: 800px) {
+      body {
+        padding: 28px;
+        background-position: 65% center;
+      }
+
+      body::before {
+        background: linear-gradient(
+          0deg,
+          rgba(12, 13, 40, 0.97) 0%,
+          rgba(12, 13, 40, 0.86) 60%,
+          rgba(12, 13, 40, 0.5) 100%
+        );
+      }
+
+      .contenu {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 25px 0;
+      }
+
+      .intro h1 {
+        font-size: clamp(2.8rem, 12vw, 4.5rem);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .carte {
+        padding: 18px;
+      }
+
+      #liste-joueurs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      body.equipes-creees #section-equipes.visible {
+        padding: 8px;
+      }
+
+      body.equipes-creees #section-equipes > h2 {
+        top: 8px;
+        font-size: clamp(1.1rem, 4vw, 1.5rem);
+      }
+
+      body.equipes-creees #compteur-equipes {
+        top: 42px;
+      }
+
+      body.equipes-creees #liste-equipes {
+        inset: 72px 8px 8px;
+        gap: 8px;
+      }
+
+      body.equipes-creees .carte-equipe {
+        padding: 6px;
+        border-radius: 12px;
+      }
+
+      body.equipes-creees .carte-equipe h3 {
+        font-size: clamp(0.75rem, 3.5vw, 1.1rem);
+      }
+
+      body.equipes-creees .totem {
+        font-size: clamp(1.2rem, 7vw, 2rem);
+      }
+
+      body.equipes-creees .joueur-equipe {
+        padding: 4px;
+        font-size: clamp(0.6rem, 3vw, 0.85rem);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Écran visible avant la commande de la régie -->
+  <section id="ecran-bienvenue">
+    <div>
+      <h1>
+        Alan t’en pose,<br>
+        <span>des questions&nbsp;!</span>
+      </h1>
+    </div>
+  </section>
+
+  <!-- Écran du jeu, affiché quand la régie l’active -->
+  <main class="contenu">
+    <section class="intro">
+      <h1>
+        Alan t’en pose,<br>
+        <span>des questions&nbsp;!</span>
+      </h1>
+
+      <div class="bloc-qr">
+        <p>📱 Scanne ce QR code pour rejoindre le jeu</p>
+
+        <a id="lien-jeu" href="jeu.html">
+          <img id="qr-code" alt="QR code pour accéder à la page du jeu">
+        </a>
+
+        <a id="lien-jeu-texte" href="jeu.html"></a>
+      </div>
+    </section>
+
+    <div class="panneaux">
+      <section class="carte carte-joueurs" aria-live="polite">
+        <h2>🎮 Joueurs connectés</h2>
+        <p class="compteur" id="compteur-joueurs">Chargement…</p>
+
+        <ul id="liste-joueurs">
+          <li class="vide">En attente des joueurs…</li>
+        </ul>
+      </section>
+
+      <section class="carte" id="section-equipes" aria-live="polite">
+        <h2>🎆 Les équipes sont prêtes !</h2>
+        <p class="compteur" id="compteur-equipes"></p>
+        <div id="liste-equipes"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ====== ÉCRAN DU MYTHO-MÈTRE (JEU 1) ====== -->
+  <section id="ecran-jeu1">
+    <h1 class="titre-jeu1">
+      Premier jeu : Le <span>Mytho-mètre</span> 🎭
+    </h1>
+    <p class="sous-titre">Saurez-vous démêler le vrai du faux ?</p>
+
+    <ul class="regles">
+      <li>✅ 4 affirmations : 3 vraies et 1 fausse… ou 3 fausses et 1 vraie&nbsp;!</li>
+      <li>🎯 Chaque équipe doit démasquer la mytho sur son téléphone.</li>
+      <li>🏆 <strong>3 points</strong> par bonne réponse.</li>
+    </ul>
+
+    <div id="affirmations-publiques"></div>
+  </section>
+
+  <!-- Le fichier intro.wav doit être dans le même dossier que index.html -->
+  <audio id="sonIntroPublic" src="intro.wav" preload="auto"></audio>
+
+  <button id="activer-son" type="button">🔊 Activer le son</button>
+
+  <canvas id="feux-artifice" aria-hidden="true"></canvas>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vuB8I0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const sonIntroPublic = document.getElementById("sonIntroPublic");
+    const boutonActiverSon = document.getElementById("activer-son");
+
+    // Clique une fois sur l’écran public pour autoriser le son.
+    boutonActiverSon.addEventListener("click", async () => {
+      try {
+        sonIntroPublic.muted = true;
+        await sonIntroPublic.play();
+        sonIntroPublic.pause();
+        sonIntroPublic.currentTime = 0;
+        sonIntroPublic.muted = false;
+
+        boutonActiverSon.textContent = "✅ Son activé";
+        boutonActiverSon.disabled = true;
+      } catch (error) {
+        console.error("Impossible d’activer le son :", error);
+        sonIntroPublic.muted = false;
+        boutonActiverSon.textContent = "⚠️ Vérifie intro.wav";
+      }
+    });
+
+    // La régie commande l’écran en modifiant partie/affichage dans Firebase.
+    onValue(ref(db, "partie/affichage"), (snapshot) => {
+      document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
+    });
+
+    // La régie commande la musique via partie/introCommande.
+    onValue(
+      ref(db, "partie/introCommande"),
+      async (snapshot) => {
+        const commande = snapshot.val();
+
+        if (commande?.action === "lecture") {
+          try {
+            sonIntroPublic.currentTime = 0;
+            await sonIntroPublic.play();
+          } catch (error) {
+            console.error(
+              "Impossible de lancer le son sur l’écran public :",
+              error
+            );
+          }
+        }
+
+        if (commande?.action === "arret") {
+          sonIntroPublic.pause();
+          sonIntroPublic.currentTime = 0;
+        }
+      },
+      (error) => {
+        console.error("Erreur d’écoute de la commande audio :", error);
+      }
+    );
+
+    // Le QR code et le lien pointent vers jeu.html, dans le même dossier.
+    const urlJeu = new URL("jeu.html", window.location.href).href;
+
+    document.getElementById("lien-jeu").href = urlJeu;
+
+    const lienJeuTexte = document.getElementById("lien-jeu-texte");
+    lienJeuTexte.href = urlJeu;
+    lienJeuTexte.textContent = urlJeu;
+
+    document.getElementById("qr-code").src =
+      `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(urlJeu)}`;
+
+    const listeJoueurs = document.getElementById("liste-joueurs");
+    const compteurJoueurs = document.getElementById("compteur-joueurs");
+    const sectionEquipes = document.getElementById("section-equipes");
+    const listeEquipes = document.getElementById("liste-equipes");
+    const compteurEquipes = document.getElementById("compteur-equipes");
+
+    const equipesConfig = [
+      { nom: "Équipe des Lions", animal: "🦁", couleur: "#ff5555" },
+      { nom: "Équipe des Loups", animal: "🐺", couleur: "#55aaff" },
+      { nom: "Équipe des Ours", animal: "🐻", couleur: "#55d98b" },
+      { nom: "Équipe des Renards", animal: "🦊", couleur: "#ff9d42" }
+    ];
+
+    onValue(ref(db, "joueurs"), (snapshot) => {
+      const joueurs = snapshot.val() || {};
+      const pseudos = Object.values(joueurs)
+        .map(joueur => joueur?.pseudo)
+        .filter(Boolean);
+
+      compteurJoueurs.textContent =
+        `${pseudos.length} joueur${pseudos.length === 1 ? "" : "s"}`;
+
+      listeJoueurs.replaceChildren();
+
+      if (pseudos.length === 0) {
+        const ligne = document.createElement("li");
+        ligne.className = "vide";
+        ligne.textContent = "En attente des joueurs…";
+        listeJoueurs.appendChild(ligne);
+        return;
+      }
+
+      pseudos.forEach((pseudo) => {
+        const ligne = document.createElement("li");
+        ligne.textContent = `🎉 ${pseudo}`;
+        listeJoueurs.appendChild(ligne);
+      });
+    }, (error) => {
+      compteurJoueurs.textContent = "Impossible de charger les joueurs.";
+      console.error("Erreur de chargement des joueurs :", error);
+    });
+
+    let signatureEquipesPrecedente = "";
+
+    onValue(ref(db, "partie/equipes"), (snapshot) => {
+      const equipes = snapshot.val();
+      listeEquipes.replaceChildren();
+
+      if (!equipes) {
+        document.body.classList.remove("equipes-creees");
+        sectionEquipes.classList.remove("visible");
+        signatureEquipesPrecedente = "";
+        return;
+      }
+
+      const equipesTriees = Object.entries(equipes)
+        .sort(([cleA], [cleB]) => {
+          const numeroA = Number(cleA.match(/\d+/)?.[0] || 0);
+          const numeroB = Number(cleB.match(/\d+/)?.[0] || 0);
+          return numeroA - numeroB;
+        })
+        .slice(0, 4);
+
+      let totalJoueurs = 0;
+
+      equipesConfig.forEach((config, index) => {
+        const [cleEquipe, equipe] = equipesTriees[index] || [
+          `equipe${index + 1}`,
+          { joueurs: {} }
+        ];
+
+        const joueursEquipe = Object.values(equipe?.joueurs || {})
+          .filter(joueur => joueur && joueur.pseudo);
+
+        totalJoueurs += joueursEquipe.length;
+
+        const carte = document.createElement("article");
+        carte.className = "carte-equipe";
+        carte.style.setProperty("--couleur-equipe", config.couleur);
+        carte.style.animationDelay = `${index * 120}ms`;
+
+        const titre = document.createElement("h3");
+        const totem = document.createElement("span");
+        totem.className = "totem";
+        totem.textContent = config.animal;
+        titre.append(totem, document.createTextNode(config.nom));
+
+        const liste = document.createElement("div");
+        liste.className = "joueurs-equipe";
+
+        if (joueursEquipe.length === 0) {
+          const vide = document.createElement("div");
+          vide.className = "joueur-equipe";
+          vide.textContent = "En attente d’un joueur…";
+          liste.appendChild(vide);
+        } else {
+          joueursEquipe.forEach((joueur) => {
+            const nom = document.createElement("div");
+            nom.className = "joueur-equipe";
+            nom.textContent = `🎉 ${joueur.pseudo}`;
+            liste.appendChild(nom);
+          });
+        }
+
+        carte.append(titre, liste);
+        listeEquipes.appendChild(carte);
+      });
+
+      compteurEquipes.textContent =
+        `${totalJoueurs} joueur${totalJoueurs === 1 ? "" : "s"} réparti${totalJoueurs === 1 ? "" : "s"} dans 4 équipes`;
+
+      sectionEquipes.classList.add("visible");
+      document.body.classList.add("equipes-creees");
+
+      const nouvelleSignature = JSON.stringify(equipes);
+      if (nouvelleSignature !== signatureEquipesPrecedente) {
+        signatureEquipesPrecedente = nouvelleSignature;
+        lancerFeuxArtifice();
+      }
+    }, (error) => {
+      console.error("Erreur de chargement des équipes :", error);
+    });
+
+    // ====== JEU 1 : LE MYTHO-MÈTRE ======
+    const QUESTIONS = [
+      {
+        affirmations: [
+          "En Espagne, on mange 12 raisins à minuit, un par coup de minuit.",
+          "Au Danemark, on casse de la vaisselle contre les portes de ses amis.",
+          "En Écosse, le premier janvier, on s'offre des brosses à dents.",
+          "En Italie, on jette un vieux matelas par la fenêtre à minuit."
+        ],
+        mytho: 2,
+        explication: "Ce sont les Écossais qui offrent... du charbon ! (le « first footing »)"
+      },
+      {
+        affirmations: [
+          "L'usage du sapin de Noël vient d'Alsace au XVIe siècle.",
+          "Les boules de Noël étaient à l'origine en verre soufflé.",
+          "Le rouge du Père Noël a été inventé par Coca-Cola.",
+          "La chanvrière est une chanson de Noël traditionnelle."
+        ],
+        mytho: 2,
+        explication: "Le rouge existait déjà avant la pub Coca-Cola, qui l'a juste popularisé !"
+      }
+      // 👉 Même liste que la régie et question.html : ajoute tes questions aux 3 endroits
+    ];
+
+    const ecranJeu1 = document.getElementById("ecran-jeu1");
+    const zoneAffirmations = document.getElementById("affirmations-publiques");
+
+    // Affiche ou masque l’écran du Mytho-mètre selon l’état de la partie.
+    onValue(ref(db, "partie/etat"), (snapshot) => {
+      const jeu1EnCours = snapshot.val() === "jeu_1_lance";
+      ecranJeu1.style.display = jeu1EnCours ? "block" : "none";
+      document.body.classList.toggle("jeu1-actif", jeu1EnCours);
+    });
+
+    // Affiche la question courante (ou la réponse révélée) sur l’écran public.
+    onValue(ref(db, "partie/jeu1"), (snapshot) => {
+      const data = snapshot.val() || {};
+
+      if (data.questionIndex == null) {
+        zoneAffirmations.innerHTML = "<em>En attente de la première question…</em>";
+        return;
+      }
+
+      const q = QUESTIONS[data.questionIndex];
+      if (!q) return;
+
+      if (data.reponseAffichee) {
+        zoneAffirmations.innerHTML =
+          `🚨 La mytho était : « <strong style="color:#ff6b6b;">${q.affirmations[q.mytho]}</strong> »<br>` +
+          `<small style="color:#ffcf4a;">${q.explication}</small>`;
+      } else {
+        zoneAffirmations.innerHTML = q.affirmations
+          .map((a, i) => `${String.fromCharCode(65 + i)}. ${a}`)
+          .join("<br><br>");
+      }
+    });
+
+    function lancerFeuxArtifice() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const canvas = document.getElementById("feux-artifice");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particules = [];
+      const couleurs = ["#ff5555", "#55aaff", "#55d98b", "#ffcf4a", "#ffffff"];
+
+      for (let explosion = 0; explosion < 8; explosion++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height * 0.7;
+        const couleur = couleurs[explosion % couleurs.length];
+
+        for (let i = 0; i < 35; i++) {
+          const angle = (Math.PI * 2 * i) / 35;
+          const vitesse = 1.5 + Math.random() * 4;
+
+          particules.push({
+            x,
+            y,
+            vx: Math.cos(angle) * vitesse,
+            vy: Math.sin(angle) * vitesse,
+            vie: 45 + Math.random() * 25,
+            couleur
+          });
+        }
+      }
+
+      function animer() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (const p of particules) {
+          if (p.vie <= 0) continue;
+
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.035;
+          p.vie--;
+
+          ctx.globalAlpha = Math.min(1, p.vie / 25);
+          ctx.fillStyle = p.couleur;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.globalAlpha = 1;
+
+        if (particules.some(p => p.vie > 0)) {
+          requestAnimationFrame(animer);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      animer();
+    }
+  </script>
+</body>
+</html>
