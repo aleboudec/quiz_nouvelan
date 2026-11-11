@@ -220,10 +220,10 @@
         </button>
 
         <button class="bouton" id="creation-equipes" type="button">
-          <span class="icone">👥</span>
+          <span class="icone" id="icone-equipes">👥</span>
           <span class="texte-bouton">
-            <strong>Création des équipes</strong>
-            <small>Équipes de 4 joueurs maximum</small>
+            <strong id="texte-equipes">Création des équipes</strong>
+            <small id="aide-equipes">Équipes de 4 joueurs maximum</small>
           </span>
         </button>
 
@@ -531,49 +531,86 @@
       }
     }
 
-    // Création des équipes : les joueurs bloqués sont ignorés.
+    // ====== ÉQUIPES : création puis bascule d'affichage ======
+    const texteEquipes = document.getElementById("texte-equipes");
+    const aideEquipes = document.getElementById("aide-equipes");
+    const iconeEquipes = document.getElementById("icone-equipes");
+
+    let equipesAffichees = false;
+
+    function majBoutonEquipes() {
+      if (equipesAffichees) {
+        texteEquipes.textContent = "Masquer les équipes";
+        aideEquipes.textContent = "Cacher les équipes de l’écran public";
+        iconeEquipes.textContent = "🙈";
+      } else {
+        texteEquipes.textContent = "Affichage des équipes";
+        aideEquipes.textContent = "Montrer les équipes sur l’écran public";
+        iconeEquipes.textContent = "👥";
+      }
+    }
+
+    function reinitialiserBoutonEquipes() {
+      equipesAffichees = false;
+      majBoutonEquipes();
+    }
+
     document.getElementById("creation-equipes").addEventListener("click", async (event) => {
       const bouton = event.currentTarget;
       bouton.disabled = true;
-      statut.textContent = "Création des équipes en cours…";
 
       try {
-        const snapshot = await get(ref(db, "joueurs"));
-        const donnees = snapshot.val() || {};
+        // Étape 1 : les équipes n'existent pas encore → on les crée.
+        const snapshot = await get(ref(db, "partie/equipes"));
+        if (snapshot.val() == null) {
+          statut.textContent = "Création des équipes en cours…";
 
-        const joueurs = Object.entries(donnees)
-          .filter(([, joueur]) => joueur && joueur.pseudo && !joueur.bloque)
-          .map(([id, joueur]) => ({ id, pseudo: joueur.pseudo }));
+          const donneesJoueurs = (await get(ref(db, "joueurs"))).val() || {};
+          const joueurs = Object.entries(donneesJoueurs)
+            .filter(([, joueur]) => joueur && joueur.pseudo && !joueur.bloque)
+            .map(([id, joueur]) => ({ id, pseudo: joueur.pseudo }));
 
-        if (joueurs.length === 0) {
-          statut.textContent = "Aucun joueur débloqué n’est disponible pour créer les équipes.";
+          if (joueurs.length === 0) {
+            statut.textContent = "Aucun joueur débloqué n’est disponible pour créer les équipes.";
+            return;
+          }
+
+          // Mélange aléatoire des joueurs.
+          for (let i = joueurs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [joueurs[i], joueurs[j]] = [joueurs[j], joueurs[i]];
+          }
+
+          const nombreEquipes = Math.ceil(joueurs.length / 4);
+          const equipes = {};
+
+          for (let i = 1; i <= nombreEquipes; i++) {
+            equipes[`equipe${i}`] = { nom: `Équipe ${i}`, joueurs: {} };
+          }
+
+          joueurs.forEach((joueur, index) => {
+            const numeroEquipe = (index % nombreEquipes) + 1;
+            equipes[`equipe${numeroEquipe}`].joueurs[joueur.id] = { pseudo: joueur.pseudo };
+          });
+
+          await set(ref(db, "partie/equipes"), equipes);
+          await set(ref(db, "partie/modeEquipes"), false);
+          reinitialiserBoutonEquipes();
+
+          statut.textContent = `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""} réparti${joueurs.length > 1 ? "s" : ""} dans ${nombreEquipes} équipe${nombreEquipes > 1 ? "s" : ""} 🎉`;
           return;
         }
 
-        // Mélange aléatoire des joueurs.
-        for (let i = joueurs.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [joueurs[i], joueurs[j]] = [joueurs[j], joueurs[i]];
-        }
-
-        const nombreEquipes = Math.ceil(joueurs.length / 4);
-        const equipes = {};
-
-        for (let i = 1; i <= nombreEquipes; i++) {
-          equipes[`equipe${i}`] = { nom: `Équipe ${i}`, joueurs: {} };
-        }
-
-        joueurs.forEach((joueur, index) => {
-          const numeroEquipe = (index % nombreEquipes) + 1;
-          equipes[`equipe${numeroEquipe}`].joueurs[joueur.id] = { pseudo: joueur.pseudo };
-        });
-
-        await set(ref(db, "partie/equipes"), equipes);
-
-        statut.textContent = `${joueurs.length} joueur${joueurs.length > 1 ? "s" : ""} réparti${joueurs.length > 1 ? "s" : ""} dans ${nombreEquipes} équipe${nombreEquipes > 1 ? "s" : ""} 🎉`;
+        // Étape 2 : les équipes existent → on bascule l'affichage.
+        equipesAffichees = !equipesAffichees;
+        await set(ref(db, "partie/modeEquipes"), equipesAffichees);
+        majBoutonEquipes();
+        statut.textContent = equipesAffichees
+          ? "Les équipes sont affichées sur l’écran public 👥"
+          : "Les équipes sont masquées sur l’écran public.";
       } catch (error) {
-        console.error("Erreur lors de la création des équipes :", error);
-        statut.textContent = "Impossible de créer les équipes. Vérifie la connexion et les règles Firebase.";
+        console.error("Erreur lors de la gestion des équipes :", error);
+        statut.textContent = "Impossible de gérer les équipes. Vérifie la connexion et les règles Firebase.";
       } finally {
         bouton.disabled = false;
       }
@@ -586,6 +623,8 @@
       bouton.disabled = true;
       try {
         await set(ref(db, "partie/equipes"), null);
+        await set(ref(db, "partie/modeEquipes"), false);
+        reinitialiserBoutonEquipes();
         statut.textContent = "Toutes les équipes ont été supprimées.";
       } catch (error) {
         console.error("Erreur lors de la suppression des équipes :", error);
@@ -641,28 +680,6 @@
       }
     });
 
-        // Quitter le jeu : retour au menu des jeux et remise à zéro.
-    document.getElementById("quitter-jeu").addEventListener("click", async (event) => {
-      if (!confirm("Quitter le jeu 1 ? La progression (questions/réponses) sera remise à zéro.")) return;
-      const bouton = event.currentTarget;
-      bouton.disabled = true;
-      try {
-        // Remet l'état de la partie et du jeu 1 à zéro.
-        await set(ref(db, "partie/etat"), "accueil");
-        await set(ref(db, "partie/jeu1"), null);
-
-        // Retour au menu des 5 jeux.
-        controlesJeu1.style.display = "none";
-        menuJeux.style.display = "grid";
-        statut.textContent = "Tu as quitté le jeu 1. Choisis un autre jeu ! 👋";
-      } catch (e) {
-        console.error(e);
-        statut.textContent = "Impossible de quitter le jeu. Vérifie la connexion à Firebase.";
-      } finally {
-        bouton.disabled = false;
-      }
-    });
-
     // Afficher la réponse
     document.getElementById("afficher-reponse").addEventListener("click", async (event) => {
       const bouton = event.currentTarget;
@@ -698,6 +715,28 @@
       } catch (e) {
         console.error(e);
         statut.textContent = "Impossible de changer d’équipe.";
+      } finally {
+        bouton.disabled = false;
+      }
+    });
+
+    // Quitter le jeu : retour au menu des jeux et remise à zéro.
+    document.getElementById("quitter-jeu").addEventListener("click", async (event) => {
+      if (!confirm("Quitter le jeu 1 ? La progression (questions/réponses) sera remise à zéro.")) return;
+      const bouton = event.currentTarget;
+      bouton.disabled = true;
+      try {
+        // Remet l'état de la partie et du jeu 1 à zéro.
+        await set(ref(db, "partie/etat"), "accueil");
+        await set(ref(db, "partie/jeu1"), null);
+
+        // Retour au menu des 5 jeux.
+        controlesJeu1.style.display = "none";
+        menuJeux.style.display = "grid";
+        statut.textContent = "Tu as quitté le jeu 1. Choisis un autre jeu ! 👋";
+      } catch (e) {
+        console.error(e);
+        statut.textContent = "Impossible de quitter le jeu. Vérifie la connexion à Firebase.";
       } finally {
         bouton.disabled = false;
       }
