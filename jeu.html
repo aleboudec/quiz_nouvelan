@@ -258,8 +258,9 @@
       if (arretEcouteLancement) arretEcouteLancement();
 
       arretEcouteLancement = onValue(ref(db, "partie/etat"), (snapshot) => {
-        if (snapshot.val() === "jeu_lance") {
-          window.location.href = "question.html";
+        const etat = snapshot.val();
+        if (etat === "jeu_lance" || etat === "jeu_1_lance") {
+          window.location.href = "jeu1_player.html";
         }
       });
     }
