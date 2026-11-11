@@ -565,6 +565,13 @@
       document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
     });
 
+    // Quand la régie lance le jeu 1, l'écran se redirige vers jeu1.html
+    onValue(ref(db, "partie/etat"), (snapshot) => {
+      if (snapshot.val() === "jeu_1_lance") {
+        window.location.href = "jeu1.html";
+      }
+    });
+
     // La régie commande la musique via partie/introCommande.
     onValue(
       ref(db, "partie/introCommande"),
