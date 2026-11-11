@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tableau des scores</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 4vw;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+      background: linear-gradient(135deg, #171735 0%, #2a2a5e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      text-shadow: 2px 2px 0 #09091d;
+      margin: 0 0 8px;
+    }
+
+    h1 span { color: #ffcf4a; }
+
+    .sous-titre {
+      color: #d0d0e5;
+      font-size: 1.2rem;
+      margin: 0 0 40px;
+    }
+
+    #liste-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: min(800px, 100%);
+    }
+
+    .ligne-score {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 22px 30px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 18px;
+      background: rgba(37, 37, 77, 0.9);
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+      text-shadow: 1px 1px 0 #09091d;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* 🥇 Podium : le leader a un cadre doré */
+    .ligne-score.premier {
+      border-color: #ffcf4a;
+      box-shadow: 0 0 24px rgba(255, 207, 74, 0.35);
+      transform: scale(1.02);
+    }
+
+    .rang { font-size: 1.5em; width: 60px; text-align: center; }
+
+    .nom-equipe { flex: 1; }
+
+    .score {
+      font-weight: 700;
+      color: #ffcf4a;
+      font-size: 1.2em;
+    }
+
+    .attente {
+      padding: 30px;
+      text-align: center;
+      color: #d0d0e5;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Tableau des <span>scores</span> 🏆</h1>
+  <p class="sous-titre">Qui décrochera la première place ?</p>
+
+  <div id="liste-scores">
+    <p class="attente">Chargement des scores… ⏳</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const listeScores = document.getElementById("liste-scores");
+
+    const MEDAILLES = ["🥇", "🥈", "🥉"];
+
+    // Affiche les scores en temps réel, triés du meilleur au moins bon.
+    onValue(ref(db, "partie/scores"), (snapshot) => {
+      const scores = snapshot.val();
+
+      if (!scores) {
+        listeScores.innerHTML = `<p class="attente">Aucune équipe enregistrée pour le moment…</p>`;
+        return;
+      }
+
+      // On transforme l'objet en tableau et on trie par score décroissant.
+      const equipes = Object.entries(scores)
+        .map(([cle, donnees]) => ({
+          nom: donnees.nom || cle,
+          score: donnees.score || 0
+        }))
+        .sort((a, b) => b.score - a.score);
+
+      let html = "";
+      equipes.forEach((equipe, index) => {
+        const rang = MEDAILLES[index] || `${index + 1}e`;
+        const classePremier = index === 0 && equipe.score > 0 ? " premier" : "";
+        html += `
+          <div class="ligne-score${classePremier}">
+            <span class="rang">${rang}</span>
+            <span class="nom-equipe">${equipe.nom}</span>
+            <span class="score">${equipe.score} pts</span>
+          </div>`;
+      });
+
+      listeScores.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
