@@ -5,6 +5,7 @@
 //    - explication : affichée sur l'écran public après révélation
 export const QUESTIONS = [
   {
+    question: "Au nouvel, qu'est ce qu'on fait surtout pas ? ",
     affirmations: [
       "En Espagne, on mange 12 raisins à minuit, un par coup de minuit.",
       "Au Danemark, on casse de la vaisselle contre les portes de ses amis.",
@@ -15,6 +16,7 @@ export const QUESTIONS = [
     explication: "Ce sont les Écossais qui offrent... du charbon ! (le « first footing »)"
   },
   {
+    question: "Quel phrase sur noel est fausse ? ",
     affirmations: [
       "L'usage du sapin de Noël vient d'Alsace au XVIe siècle.",
       "Les boules de Noël étaient à l'origine en verre soufflé.",
