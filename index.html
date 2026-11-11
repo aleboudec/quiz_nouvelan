@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quiz d’Alan</title>
+  <title>Quiz d'Alan</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
       pointer-events: none;
     }
 
-    /* Écran d’accueil visible au départ */
+    /* Écran d'accueil visible au départ */
     #ecran-bienvenue {
       position: fixed;
       inset: 0;
@@ -68,7 +68,7 @@
       font-size: clamp(1.2rem, 3vw, 2rem);
     }
 
-    /* L’écran du jeu est caché tant que la régie ne l’a pas demandé */
+    /* L'écran du jeu est caché tant que la régie ne l'a pas demandé */
     .contenu {
       display: none;
       position: relative;
@@ -468,17 +468,17 @@
   <section id="ecran-bienvenue">
     <div>
       <h1>
-        Alan t’en pose,<br>
+        Alan t'en pose,<br>
         <span>des questions&nbsp;!</span>
       </h1>
     </div>
   </section>
 
-  <!-- Écran du jeu, affiché quand la régie l’active -->
+  <!-- Écran du jeu, affiché quand la régie l'active -->
   <main class="contenu">
     <section class="intro">
       <h1>
-        Alan t’en pose,<br>
+        Alan t'en pose,<br>
         <span>des questions&nbsp;!</span>
       </h1>
 
@@ -527,7 +527,7 @@
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyB-Hv3dU-vuB8I0IAk3AUdIiqv1Ykmn4x8",
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
       authDomain: "nouvelan-a256f.firebaseapp.com",
       databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "nouvelan-a256f",
@@ -542,7 +542,7 @@
     const sonIntroPublic = document.getElementById("sonIntroPublic");
     const boutonActiverSon = document.getElementById("activer-son");
 
-    // Clique une fois sur l’écran public pour autoriser le son.
+    // Clique une fois sur l'écran public pour autoriser le son.
     boutonActiverSon.addEventListener("click", async () => {
       try {
         sonIntroPublic.muted = true;
@@ -554,13 +554,13 @@
         boutonActiverSon.textContent = "✅ Son activé";
         boutonActiverSon.disabled = true;
       } catch (error) {
-        console.error("Impossible d’activer le son :", error);
+        console.error("Impossible d'activer le son :", error);
         sonIntroPublic.muted = false;
         boutonActiverSon.textContent = "⚠️ Vérifie intro.wav";
       }
     });
 
-    // La régie commande l’écran en modifiant partie/affichage dans Firebase.
+    // La régie commande l'écran en modifiant partie/affichage dans Firebase.
     onValue(ref(db, "partie/affichage"), (snapshot) => {
       document.body.classList.toggle("mode-jeu", snapshot.val() === "jeu");
     });
@@ -584,7 +584,7 @@
             await sonIntroPublic.play();
           } catch (error) {
             console.error(
-              "Impossible de lancer le son sur l’écran public :",
+              "Impossible de lancer le son sur l'écran public :",
               error
             );
           }
@@ -596,7 +596,7 @@
         }
       },
       (error) => {
-        console.error("Erreur d’écoute de la commande audio :", error);
+        console.error("Erreur d'écoute de la commande audio :", error);
       }
     );
 
@@ -655,15 +655,25 @@
     });
 
     let signatureEquipesPrecedente = "";
+    let equipesVisibles = false;
 
+    function appliquerAffichageEquipes() {
+      const equipesExistent = signatureEquipesPrecedente !== "";
+      const doitAfficher = equipesExistent && equipesVisibles;
+
+      sectionEquipes.classList.toggle("visible", doitAfficher);
+      document.body.classList.toggle("equipes-creees", doitAfficher);
+    }
+
+    // Construit les cartes d'équipes (sans forcément les afficher).
     onValue(ref(db, "partie/equipes"), (snapshot) => {
       const equipes = snapshot.val();
       listeEquipes.replaceChildren();
 
       if (!equipes) {
-        document.body.classList.remove("equipes-creees");
-        sectionEquipes.classList.remove("visible");
         signatureEquipesPrecedente = "";
+        equipesVisibles = false;
+        appliquerAffichageEquipes();
         return;
       }
 
@@ -705,7 +715,7 @@
         if (joueursEquipe.length === 0) {
           const vide = document.createElement("div");
           vide.className = "joueur-equipe";
-          vide.textContent = "En attente d’un joueur…";
+          vide.textContent = "En attente d'un joueur…";
           liste.appendChild(vide);
         } else {
           joueursEquipe.forEach((joueur) => {
@@ -723,16 +733,21 @@
       compteurEquipes.textContent =
         `${totalJoueurs} joueur${totalJoueurs === 1 ? "" : "s"} réparti${totalJoueurs === 1 ? "" : "s"} dans 4 équipes`;
 
-      sectionEquipes.classList.add("visible");
-      document.body.classList.add("equipes-creees");
+      appliquerAffichageEquipes();
 
       const nouvelleSignature = JSON.stringify(equipes);
       if (nouvelleSignature !== signatureEquipesPrecedente) {
         signatureEquipesPrecedente = nouvelleSignature;
-        lancerFeuxArtifice();
+        if (equipesVisibles) lancerFeuxArtifice();
       }
     }, (error) => {
       console.error("Erreur de chargement des équipes :", error);
+    });
+
+    // La régie commande l'affichage des équipes via partie/modeEquipes.
+    onValue(ref(db, "partie/modeEquipes"), (snapshot) => {
+      equipesVisibles = snapshot.val() === true;
+      appliquerAffichageEquipes();
     });
 
     function lancerFeuxArtifice() {
