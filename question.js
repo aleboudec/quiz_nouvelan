@@ -1,20 +1,27 @@
-export const POINTS_BONNE_REPONSE = 3;
-
-export const QUESTIONS = {
-  1: [
-    { texte: "Quelle est la capitale de la France ?",
-      reponses: ["Paris", "Lyon", "Marseille", "Bordeaux"], bonne: 0 },
-    { texte: "Combien font 7 × 8 ?",
-      reponses: ["54", "56", "48", "64"], bonne: 1 },
-    { texte: "Quel animal est surnommé le « roi des animaux » ?",
-      reponses: ["Le tigre", "L'éléphant", "Le lion", "Le gorille"], bonne: 2 },
-    { texte: "Quelle planète est la plus proche du Soleil ?",
-      reponses: ["Vénus", "Mars", "Mercure", "Terre"], bonne: 2 },
-    { texte: "En quelle année a eu lieu la Révolution française ?",
-      reponses: ["1789", "1815", "1848", "1914"], bonne: 0 }
-  ],
-  2: [ /* 5 questions jeu 2... même format */ ],
-  3: [ /* ... */ ],
-  4: [ /* ... */ ],
-  5: [ /* ... */ ]
-};
+// ====== QUESTIONS DU MYTHO-MÈTRE (JEU 1) ======
+// 👉 Ajoute tes questions ICI uniquement ! Le format :
+//    - affirmations : tableau de 4 phrases
+//    - mytho : l'index (0, 1, 2 ou 3) de la fausse affirmation
+//    - explication : affichée sur l'écran public après révélation
+export const QUESTIONS = [
+  {
+    affirmations: [
+      "En Espagne, on mange 12 raisins à minuit, un par coup de minuit.",
+      "Au Danemark, on casse de la vaisselle contre les portes de ses amis.",
+      "En Écosse, le premier janvier, on s'offre des brosses à dents.",
+      "En Italie, on jette un vieux matelas par la fenêtre à minuit."
+    ],
+    mytho: 2,
+    explication: "Ce sont les Écossais qui offrent... du charbon ! (le « first footing »)"
+  },
+  {
+    affirmations: [
+      "L'usage du sapin de Noël vient d'Alsace au XVIe siècle.",
+      "Les boules de Noël étaient à l'origine en verre soufflé.",
+      "Le rouge du Père Noël a été inventé par Coca-Cola.",
+      "La chanvrière est une chanson de Noël traditionnelle."
+    ],
+    mytho: 2,
+    explication: "Le rouge existait déjà avant la pub Coca-Cola, qui l'a juste popularisé !"
+  }
+];
