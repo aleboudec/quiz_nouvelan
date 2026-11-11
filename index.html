@@ -40,27 +40,27 @@
 
     /* Écran d’accueil visible au départ */
     #ecran-bienvenue {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  display: grid;
-  place-content: center;
-  padding: 24px;
-  padding-right: 10vw;
-  text-align: center;
-}
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-content: center;
+      padding: 24px;
+      padding-right: 10vw;
+      text-align: center;
+    }
 
-#ecran-bienvenue h1 {
-  margin: 0;
-  font-size: clamp(3rem, 10vw, 8rem);
-  line-height: 0.98;
-  letter-spacing: -2px;
-  text-shadow: 4px 5px 0 #09091d;
-}
+    #ecran-bienvenue h1 {
+      margin: 0;
+      font-size: clamp(3rem, 10vw, 8rem);
+      line-height: 0.98;
+      letter-spacing: -2px;
+      text-shadow: 4px 5px 0 #09091d;
+    }
 
-#ecran-bienvenue h1 span {
-  color: #ffcf4a;
-}
+    #ecran-bienvenue h1 span {
+      color: #ffcf4a;
+    }
 
     #ecran-bienvenue p {
       margin: 20px 0 0;
@@ -230,6 +230,44 @@
       text-align: left;
     }
 
+    /* ====== ÉCRAN DU MYTHO-MÈTRE (JEU 1) ====== */
+    #ecran-jeu1 {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      padding: 5vw;
+      overflow: auto;
+    }
+
+    #ecran-jeu1 .titre-jeu1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4.5rem);
+      text-shadow: 4px 5px 0 #09091d;
+    }
+
+    #ecran-jeu1 .titre-jeu1 span {
+      color: #ffcf4a;
+    }
+
+    #ecran-jeu1 .sous-titre {
+      margin: 10px 0 20px;
+      font-size: clamp(1.1rem, 3vw, 1.8rem);
+      color: #ffcf4a;
+    }
+
+    #ecran-jeu1 .regles {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      line-height: 1.9;
+      margin: 0 0 20px;
+      text-shadow: 2px 2px 0 #09091d;
+    }
+
+    #affirmations-publiques {
+      font-size: clamp(1.1rem, 2.8vw, 1.7rem);
+      line-height: 2;
+    }
+
     #feux-artifice {
       position: fixed;
       inset: 0;
@@ -380,6 +418,13 @@
       font-size: clamp(0.65rem, 1.8vh, 1rem);
     }
 
+    /* Quand le jeu 1 est affiché, on masque tout le reste */
+    body.jeu1-actif #ecran-bienvenue,
+    body.jeu1-actif .contenu,
+    body.jeu1-actif #section-equipes {
+      display: none;
+    }
+
     @media (max-width: 800px) {
       body {
         padding: 28px;
@@ -466,13 +511,13 @@
 <body>
   <!-- Écran visible avant la commande de la régie -->
   <section id="ecran-bienvenue">
-  <div>
-    <h1>
-      Alan t’en pose,<br>
-      <span>des questions&nbsp;!</span>
-    </h1>
-  </div>
-</section>
+    <div>
+      <h1>
+        Alan t’en pose,<br>
+        <span>des questions&nbsp;!</span>
+      </h1>
+    </div>
+  </section>
 
   <!-- Écran du jeu, affiché quand la régie l’active -->
   <main class="contenu">
@@ -510,6 +555,22 @@
       </section>
     </div>
   </main>
+
+  <!-- ====== ÉCRAN DU MYTHO-MÈTRE (JEU 1) ====== -->
+  <section id="ecran-jeu1">
+    <h1 class="titre-jeu1">
+      Premier jeu : Le <span>Mytho-mètre</span> 🎭
+    </h1>
+    <p class="sous-titre">Saurez-vous démêler le vrai du faux ?</p>
+
+    <ul class="regles">
+      <li>✅ 4 affirmations : 3 vraies et 1 fausse… ou 3 fausses et 1 vraie&nbsp;!</li>
+      <li>🎯 Chaque équipe doit démasquer la mytho sur son téléphone.</li>
+      <li>🏆 <strong>3 points</strong> par bonne réponse.</li>
+    </ul>
+
+    <div id="affirmations-publiques"></div>
+  </section>
 
   <!-- Le fichier intro.wav doit être dans le même dossier que index.html -->
   <audio id="sonIntroPublic" src="intro.wav" preload="auto"></audio>
@@ -726,6 +787,64 @@
       }
     }, (error) => {
       console.error("Erreur de chargement des équipes :", error);
+    });
+
+    // ====== JEU 1 : LE MYTHO-MÈTRE ======
+    const QUESTIONS = [
+      {
+        affirmations: [
+          "En Espagne, on mange 12 raisins à minuit, un par coup de minuit.",
+          "Au Danemark, on casse de la vaisselle contre les portes de ses amis.",
+          "En Écosse, le premier janvier, on s'offre des brosses à dents.",
+          "En Italie, on jette un vieux matelas par la fenêtre à minuit."
+        ],
+        mytho: 2,
+        explication: "Ce sont les Écossais qui offrent... du charbon ! (le « first footing »)"
+      },
+      {
+        affirmations: [
+          "L'usage du sapin de Noël vient d'Alsace au XVIe siècle.",
+          "Les boules de Noël étaient à l'origine en verre soufflé.",
+          "Le rouge du Père Noël a été inventé par Coca-Cola.",
+          "La chanvrière est une chanson de Noël traditionnelle."
+        ],
+        mytho: 2,
+        explication: "Le rouge existait déjà avant la pub Coca-Cola, qui l'a juste popularisé !"
+      }
+      // 👉 Même liste que la régie et question.html : ajoute tes questions aux 3 endroits
+    ];
+
+    const ecranJeu1 = document.getElementById("ecran-jeu1");
+    const zoneAffirmations = document.getElementById("affirmations-publiques");
+
+    // Affiche ou masque l’écran du Mytho-mètre selon l’état de la partie.
+    onValue(ref(db, "partie/etat"), (snapshot) => {
+      const jeu1EnCours = snapshot.val() === "jeu_1_lance";
+      ecranJeu1.style.display = jeu1EnCours ? "block" : "none";
+      document.body.classList.toggle("jeu1-actif", jeu1EnCours);
+    });
+
+    // Affiche la question courante (ou la réponse révélée) sur l’écran public.
+    onValue(ref(db, "partie/jeu1"), (snapshot) => {
+      const data = snapshot.val() || {};
+
+      if (data.questionIndex == null) {
+        zoneAffirmations.innerHTML = "<em>En attente de la première question…</em>";
+        return;
+      }
+
+      const q = QUESTIONS[data.questionIndex];
+      if (!q) return;
+
+      if (data.reponseAffichee) {
+        zoneAffirmations.innerHTML =
+          `🚨 La mytho était : « <strong style="color:#ff6b6b;">${q.affirmations[q.mytho]}</strong> »<br>` +
+          `<small style="color:#ffcf4a;">${q.explication}</small>`;
+      } else {
+        zoneAffirmations.innerHTML = q.affirmations
+          .map((a, i) => `${String.fromCharCode(65 + i)}. ${a}`)
+          .join("<br><br>");
+      }
     });
 
     function lancerFeuxArtifice() {
