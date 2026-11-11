@@ -215,12 +215,8 @@
     function afficherQuestion(q, reponseAffichee) {
       const lettres = ["A", "B", "C", "D"];
 
-      // Consigne affichée à la place de la question (si elle n'existe pas).
-      const consigne = Math.random() < 0.5
-        ? "🔍 Trouve le mytho !"
-        : "💡 Trouve la vérité !";
-
-      const texteQuestion = q.question || q.texte || consigne;
+            // Affiche la vraie question de questions.js (avec une petite consigne en bonus).
+      const texteQuestion = `${q.question || q.texte}<br><small style="color:#ffcf4a; font-size:0.75em;">🔍 Quelle affirmation est le mytho ?</small>`;
 
       let html = `<div class="question-principale">${texteQuestion}</div><div id="zone-reponses">`;
 
