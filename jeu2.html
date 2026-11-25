@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Le Mytho-mètre</title>
+  <title>Blind Test Ciné & Séries</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,87 +24,92 @@
       justify-content: center;
     }
 
-    /* ====== ZONE D'AFFICHAGE DES QUESTIONS ====== */
-    #zone-question {
+    #zone-blindtest {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
-      max-width: 1400px;
+      gap: 24px;
+      max-width: 1100px;
       margin: 0 auto;
       width: 100%;
+      text-align: center;
     }
 
-    .question-principale {
-      padding: 34px 38px;
+    .carte-ecoute {
+      padding: 60px 40px;
       border: 3px solid #ffcf4a;
-      border-radius: 22px;
+      border-radius: 24px;
       background: rgba(20, 21, 57, 0.9);
-      font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-      line-height: 1.4;
-      text-align: center;
+      box-shadow: 0 0 35px rgba(255, 207, 74, 0.25);
+    }
+
+    .icone-son {
+      font-size: 5rem;
+      display: inline-block;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    .titre-ecoute {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      margin: 20px 0 10px;
       text-shadow: 2px 2px 0 #09091d;
-      box-shadow: 0 0 30px rgba(255, 207, 74, 0.3);
     }
 
-    .grille-reponses {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-    }
-
-    .case-reponse {
-      padding: 30px 34px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 18px;
-      background: rgba(37, 37, 77, 0.9);
-      font-size: clamp(1.2rem, 2.5vw, 1.9rem);
-      line-height: 1.4;
-      text-shadow: 1px 1px 0 #09091d;
-    }
-
-    .case-reponse.correcte {
-      border-color: #55d98b;
-      background: rgba(85, 217, 139, 0.25);
-      box-shadow: 0 0 24px rgba(85, 217, 139, 0.4);
-    }
-
-    .case-reponse.fausse {
-      opacity: 0.45;
-      border-color: #ff6b6b;
-    }
-
-    .revelation {
-      padding: 26px 32px;
-      border-radius: 18px;
-      background: rgba(255, 107, 107, 0.15);
-      border: 2px dashed #ff6b6b;
+    .indice {
       font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-      line-height: 1.5;
-      text-align: center;
+      color: #ffcf4a;
+      margin-top: 15px;
     }
 
-    .revelation small { color: #ffcf4a; display: block; margin-top: 10px; }
+    .carte-reponse {
+      padding: 40px;
+      border: 3px solid #55d98b;
+      border-radius: 24px;
+      background: rgba(85, 217, 139, 0.15);
+      box-shadow: 0 0 30px rgba(85, 217, 139, 0.35);
+    }
+
+    .reponse-titre {
+      font-size: clamp(2rem, 4.5vw, 3.5rem);
+      font-weight: 700;
+      color: #55d98b;
+      text-shadow: 2px 2px 0 #09091d;
+      margin: 0 0 12px;
+    }
+
+    .reponse-sous-titre {
+      font-size: clamp(1.3rem, 2.5vw, 2rem);
+      color: #ffffff;
+      margin: 0;
+    }
 
     .attente {
       padding: 30px;
       text-align: center;
       color: #d0d0e5;
-      font-size: 1.6rem;
+      font-size: 1.8rem;
     }
   </style>
 </head>
 
 <body>
-  <div id="zone-question">
-    <p class="attente">En attente de la première question… ⏳</p>
+  <div id="zone-blindtest">
+    <p class="attente">En attente du premier extrait… 🎵</p>
   </div>
+
+  <!-- Lecteur audio caché -->
+  <audio id="lecteur-audio"></audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
     import {
       getDatabase, ref, onValue
     } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
-    import { QUESTIONS } from "./questions.js";
+    import { EXTRAITS } from "./blindtest.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
@@ -119,50 +124,59 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const zoneQuestion = document.getElementById("zone-question");
+    const zoneBlindtest = document.getElementById("zone-blindtest");
+    const lecteurAudio = document.getElementById("lecteur-audio");
+    let dernierIndexJoue = null;
 
-    // Retour à l'accueil si la régie quitte le jeu.
+    // Retour à l'accueil si la régie quitte le jeu 2
     onValue(ref(db, "partie/etat"), (snapshot) => {
-      if (snapshot.val() !== "jeu_1_lance") {
+      if (snapshot.val() !== "jeu_2_lance") {
+        lecteurAudio.pause();
         window.location.href = "index.html";
       }
     });
 
-    // Affiche la question courante et la révélation éventuelle.
-    onValue(ref(db, "partie/jeu1"), (snapshot) => {
+    // Affichage et lecture de l'extrait courant
+    onValue(ref(db, "partie/jeu2"), (snapshot) => {
       const donnees = snapshot.val();
-      if (!donnees || donnees.questionIndex == null) {
-        zoneQuestion.innerHTML = `<p class="attente">En attente de la première question… ⏳</p>`;
+      if (!donnees || donnees.extraitIndex == null) {
+        lecteurAudio.pause();
+        dernierIndexJoue = null;
+        zoneBlindtest.innerHTML = `<p class="attente">En attente du premier extrait… 🎵</p>`;
         return;
       }
 
-      const q = QUESTIONS[donnees.questionIndex];
-      if (!q) {
-        zoneQuestion.innerHTML = `<p class="attente">Fin des questions ! 🎉</p>`;
+      const extrait = EXTRAITS[donnees.extraitIndex];
+      if (!extrait) {
+        lecteurAudio.pause();
+        zoneBlindtest.innerHTML = `<p class="attente">Fin du Blind Test ! 🎉</p>`;
         return;
       }
 
-      const lettres = ["A", "B", "C", "D"];
-
-      let html = `<div class="question-principale">${q.question || q.texte}</div>`;
-      html += `<div class="grille-reponses">`;
-
-      q.affirmations.forEach((affirmation, index) => {
-        let classe = "case-reponse";
-        if (donnees.reponseAffichee) {
-          if (index === q.mytho) classe += " correcte";
-          else classe += " fausse";
-        }
-        html += `<div class="${classe}"><strong>${lettres[index]}.</strong> ${affirmation}</div>`;
-      });
-
-      html += `</div>`;
-
-      if (donnees.reponseAffichee) {
-        html += `<div class="revelation">🚨 La mytho était : <strong>« ${q.affirmations[q.mytho]} »</strong><small>${q.explication}</small></div>`;
+      // Lance la musique uniquement si on vient de changer d'extrait
+      if (dernierIndexJoue !== donnees.extraitIndex) {
+        dernierIndexJoue = donnees.extraitIndex;
+        lecteurAudio.src = extrait.audio; // ex: "./sons/pirates.mp3"
+        lecteurAudio.play().catch(err => console.log("Lecture auto bloquée :", err));
       }
 
-      zoneQuestion.innerHTML = html;
+      // Affichage avant ou après révélation
+      if (!donnees.reponseAffichee) {
+        zoneBlindtest.innerHTML = `
+          <div class="carte-ecoute">
+            <div class="icone-son">🎧</div>
+            <div class="titre-ecoute">Extrait n°${donnees.extraitIndex + 1}</div>
+            ${extrait.indice ? `<div class="indice">💡 Indice : ${extrait.indice}</div>` : ""}
+          </div>
+        `;
+      } else {
+        zoneBlindtest.innerHTML = `
+          <div class="carte-reponse">
+            <div class="reponse-titre">🎬 ${extrait.titre}</div>
+            <p class="reponse-sous-titre">${extrait.details || ""}</p>
+          </div>
+        `;
+      }
     });
   </script>
 </body>
