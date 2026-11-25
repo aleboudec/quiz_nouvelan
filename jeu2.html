@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Le Mytho-mètre</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 4vw;
+      color: white;
+      font-family: "Fredoka", Arial, sans-serif;
+      background: linear-gradient(135deg, #171735 0%, #2a2a5e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ====== ZONE D'AFFICHAGE DES QUESTIONS ====== */
+    #zone-question {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .question-principale {
+      padding: 34px 38px;
+      border: 3px solid #ffcf4a;
+      border-radius: 22px;
+      background: rgba(20, 21, 57, 0.9);
+      font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+      line-height: 1.4;
+      text-align: center;
+      text-shadow: 2px 2px 0 #09091d;
+      box-shadow: 0 0 30px rgba(255, 207, 74, 0.3);
+    }
+
+    .grille-reponses {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .case-reponse {
+      padding: 30px 34px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 18px;
+      background: rgba(37, 37, 77, 0.9);
+      font-size: clamp(1.2rem, 2.5vw, 1.9rem);
+      line-height: 1.4;
+      text-shadow: 1px 1px 0 #09091d;
+    }
+
+    .case-reponse.correcte {
+      border-color: #55d98b;
+      background: rgba(85, 217, 139, 0.25);
+      box-shadow: 0 0 24px rgba(85, 217, 139, 0.4);
+    }
+
+    .case-reponse.fausse {
+      opacity: 0.45;
+      border-color: #ff6b6b;
+    }
+
+    .revelation {
+      padding: 26px 32px;
+      border-radius: 18px;
+      background: rgba(255, 107, 107, 0.15);
+      border: 2px dashed #ff6b6b;
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .revelation small { color: #ffcf4a; display: block; margin-top: 10px; }
+
+    .attente {
+      padding: 30px;
+      text-align: center;
+      color: #d0d0e5;
+      font-size: 1.6rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="zone-question">
+    <p class="attente">En attente de la première question… ⏳</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import {
+      getDatabase, ref, onValue
+    } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+    import { QUESTIONS } from "./questions.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Hv3dU-vu8B0I0IAk3AUdIiqv1Ykmn4x8",
+      authDomain: "nouvelan-a256f.firebaseapp.com",
+      databaseURL: "https://nouvelan-a256f-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nouvelan-a256f",
+      storageBucket: "nouvelan-a256f.firebasestorage.app",
+      messagingSenderId: "312028300581",
+      appId: "1:312028300581:web:f2f53dc6f57523dc5d06cc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const zoneQuestion = document.getElementById("zone-question");
+
+    // Retour à l'accueil si la régie quitte le jeu.
+    onValue(ref(db, "partie/etat"), (snapshot) => {
+      if (snapshot.val() !== "jeu_1_lance") {
+        window.location.href = "index.html";
+      }
+    });
+
+    // Affiche la question courante et la révélation éventuelle.
+    onValue(ref(db, "partie/jeu1"), (snapshot) => {
+      const donnees = snapshot.val();
+      if (!donnees || donnees.questionIndex == null) {
+        zoneQuestion.innerHTML = `<p class="attente">En attente de la première question… ⏳</p>`;
+        return;
+      }
+
+      const q = QUESTIONS[donnees.questionIndex];
+      if (!q) {
+        zoneQuestion.innerHTML = `<p class="attente">Fin des questions ! 🎉</p>`;
+        return;
+      }
+
+      const lettres = ["A", "B", "C", "D"];
+
+      let html = `<div class="question-principale">${q.question || q.texte}</div>`;
+      html += `<div class="grille-reponses">`;
+
+      q.affirmations.forEach((affirmation, index) => {
+        let classe = "case-reponse";
+        if (donnees.reponseAffichee) {
+          if (index === q.mytho) classe += " correcte";
+          else classe += " fausse";
+        }
+        html += `<div class="${classe}"><strong>${lettres[index]}.</strong> ${affirmation}</div>`;
+      });
+
+      html += `</div>`;
+
+      if (donnees.reponseAffichee) {
+        html += `<div class="revelation">🚨 La mytho était : <strong>« ${q.affirmations[q.mytho]} »</strong><small>${q.explication}</small></div>`;
+      }
+
+      zoneQuestion.innerHTML = html;
+    });
+  </script>
+</body>
+</html>
